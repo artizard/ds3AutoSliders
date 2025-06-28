@@ -40,123 +40,6 @@ def setVal(value, startNum, confidence):
     # set by 1's
     for i in range(slideAmount % 10):
         adjust(direction, False)
-def threeSliders(a,b,c): 
-    text,confidence = mh.processRegion(.343,.203,.372,.226, True)
-    setVal(a,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.285,.372,.307, True)
-    setVal(b,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.366,.372,.389, True)
-    setVal(c,text,confidence)
-    mh.enter()
-    mh.back()
-    mh.animDelay()
-def fourSliders(a,b,c,d):
-    text,confidence = mh.processRegion(.343,.203,.372,.226, True)
-    setVal(a,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.285,.372,.307, True)
-    setVal(b,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.366,.372,.389, True)
-    setVal(c,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.448,.372,.470, True)
-    setVal(d,text,confidence)
-    mh.enter()
-    mh.back()
-    mh.animDelay()
-def fiveSliders(a,b,c,d,e):
-    text,confidence = mh.processRegion(.343,.203,.372,.226, True)
-    setVal(a,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.285,.372,.307, True)
-    setVal(b,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.366,.372,.389, True)
-    setVal(c,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.448,.372,.470, True)
-    setVal(d,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.529,.372,.552, True)
-    setVal(e,text,confidence)
-    mh.enter()
-    mh.back()
-    mh.animDelay()
-def sixSliders(a,b,c,d,e,f):
-    text,confidence = mh.processRegion(.343,.203,.372,.226, True)
-    setVal(a,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.285,.372,.307, True)
-    setVal(b,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.366,.372,.389, True)
-    setVal(c,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.448,.372,.470, True)
-    setVal(d,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.529,.372,.552, True)
-    setVal(e,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.610,.372,.633, True)
-    setVal(f,text,confidence)
-    mh.enter()
-    mh.back()
-    mh.animDelay()
-def sevenSliders(a,b,c,d,e,f,g):
-    text,confidence = mh.processRegion(.343,.203,.372,.226, True)
-    setVal(a,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.285,.372,.307, True)
-    setVal(b,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.366,.372,.389, True)
-    setVal(c,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.448,.372,.470, True)
-    setVal(d,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.529,.372,.552, True)
-    setVal(e,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.610,.372,.633, True)
-    setVal(f,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.692,.372,.715, True)
-    setVal(g,text,confidence)
-    mh.enter()
-    mh.back()
-    mh.animDelay()
-def eightSliders(a,b,c,d,e,f,g,h):
-    text,confidence = mh.processRegion(.343,.203,.372,.226, True)
-    setVal(a,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.285,.372,.307, True)
-    setVal(b,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.366,.372,.389, True)
-    setVal(c,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.448,.372,.470, True)
-    setVal(d,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.529,.372,.552, True)
-    setVal(e,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.610,.372,.633, True)
-    setVal(f,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.692,.372,.715, True)
-    setVal(g,text,confidence)
-    mh.down()
-    text,confidence = mh.processRegion(.343,.773,.372,.796, True)
-    setVal(h,text,confidence)
-    mh.enter()
-    mh.back()
-    mh.animDelay()
 def colorSliders(r,g,b):
     mh.up()
     text,confidence = mh.processRegion(.494,.784,.521,.807, True)
@@ -251,6 +134,7 @@ def colorMenu(menu):
 def tileMenu(menu):
     if menu["value"] == -1:
         mh.back()
+        return
     if menu["folder"] == "eyelashes": # extra delay for this particular page 
         sleepMultiplier = .125
     else:
@@ -258,9 +142,6 @@ def tileMenu(menu):
     sleepTime = menu["numTiles"] * sleepMultiplier
     tileSet(menu["value"], sleepTime)
 def importMacro(menu):
-    time.sleep(.75)
-    if "gender" not in menu: # don't do if main menu 
-        mh.enter()
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()
     if "menu" in menu:
@@ -282,6 +163,7 @@ def importMacro(menu):
     else:
         # recurse into next submenu 
         for nextMenu in menu:
+            mh.enter()
             importMacro(menu[nextMenu])
             mh.down()
         mh.back()
@@ -293,9 +175,11 @@ def linkedImportMacro(menu, isLinked):
             continue
         elif isLinked:
             if menu[nextMenu]["linkType"] in ("all", "linked"):
+                mh.enter()
                 importMacro(menu[nextMenu]) # use base case to deal with 
         elif not isLinked:
             if menu[nextMenu]["linkType"] in ("all", "unlinked"):
+                mh.enter()
                 importMacro(menu[nextMenu]) # use base case to deal with 
         mh.down()
 def importCharacter(jsonPath):
@@ -306,314 +190,8 @@ def importCharacter(jsonPath):
     mh.back()
     mh.enter()
     importMacro(data)
-def getDictTemplate():
-    DROPDOWN = "dropdown"
-    SLIDERS = "sliders"
-    TILES = "tiles"
-    COLORS = "colors"
-    MENU = "menu"
-    LINKTYPE = "linkType"
-    template = {
-        "gender": {
-            MENU: DROPDOWN,
-            "options": ("male", "female"),
-            "value": ""
-        },
-        "age": {
-            MENU: DROPDOWN,
-            "options": ("young", "mature", "aged"),
-            "value": ""
-        },
-        "voice": {
-            MENU: DROPDOWN,
-            "options": ("youngVoice", "matureVoice", "agedVoice"),
-            "value": ""
-        },
-        "physique": {
-            "musculature": {
-                MENU: DROPDOWN,
-                "options": ("standard", "muscular"),
-                "value": ""
-            },
-            "bodyHair": {
-                MENU: DROPDOWN,
-                "options": ("standard", "thick"),
-                "value": ""
-            }
-        },
-        "buildDetail": {
-            MENU: SLIDERS,
-            "head": -1,
-            "chest": -1,
-            "abdomen": -1,
-            "arms": -1,
-            "legs": -1
-        },
-        "baseSkinColor": {
-            MENU: COLORS,
-            "red": -1,
-            "green": -1,
-            "blue": -1
-        },
-        "skinColor": {
-            MENU: SLIDERS,
-            "skinTone": -1,
-            "skinColorLayer1": -1,
-            "skinColorLayer2": -1,
-            "skinColorLayer3": -1,
-            "skinColorLayer4": -1,
-            "noseBridgeColor": -1,
-            "cheekColor": -1,
-            "laughLines": -1
-        },
-        "faceDetail": {
-            "features": {
-                MENU: SLIDERS,
-                "apparentAge": -1,
-                "facialAesthetic": -1,
-                "formEmphasis": -1
-            },
-            "faceShape": {
-                "facialBalance": {
-                    MENU: SLIDERS,
-                    "noseSize" : -1,
-                    "nose/foreheadRatio": -1,
-                    "faceProtrusion": -1,
-                    "vert.FacialSpacing": -1,
-                    "facialFeatureSlant": -1,
-                    "horiz.Facial": -1
-                },
-                "forehead/glabella": {
-                    MENU: SLIDERS,
-                    "foreheadDepth": -1,
-                    "foreheadProtrusion": -1,
-                    "noseBridgeHeight": -1,
-                    "bridgeProtrusion1": -1,
-                    "bridgeProtrusion2": -1,
-                    "noseBridgeWidth": -1
-                },
-                "browRidge": {
-                    MENU: SLIDERS,
-                    "browRidgeHeight": -1,
-                    "innerBrowRidge": -1,
-                    "outerBrowRidge": -1
-                },
-                "eyes": {
-                    MENU: SLIDERS,
-                    "eyePosition": -1,
-                    "eyeSize": -1,
-                    "eyeSlant": -1,
-                    "eyeSpacing": -1
-                },
-                "noseRidge": {
-                    MENU: SLIDERS,
-                    "noseRidgeDepth": -1,
-                    "noseRidgeLength": -1,
-                    "nosePosition": -1,
-                    "noseTipHeight": -1,
-                    "noseProtrusion": -1,
-                    "noseHeight": -1,
-                    "noseSlant": -1
-                },
-                "nostrils": {
-                    MENU: SLIDERS,
-                    "nostrilSlant": -1,
-                    "nostrilSize": -1,
-                    "nostrilWidth": -1,
-                    "nasalSize": -1
-                },
-                "cheeks": {
-                    MENU: SLIDERS,
-                    "cheekboneHeight": -1,
-                    "cheekboneDepth": -1,
-                    "cheekboneWidth": -1,
-                    "cheekbone": -1,
-                    "cheeks": -1
-                },
-                "lips": {
-                    MENU: SLIDERS,
-                    "lipShape": -1,
-                    "mouthExpression": -1,
-                    "lipFullness": -1,
-                    "lipSize": -1,
-                    "lipProtrusion": -1,
-                    "lipThickness": -1
-                },
-                "mouth": {
-                    MENU: SLIDERS,
-                    "mouthProtrusion": -1,
-                    "mouthSlant": -1,
-                    "occlusion": -1,
-                    "mouthPosition": -1,
-                    "mouthWidth": -1,
-                    "mouth-chinDistance": -1
-                },
-                "chin": {
-                    MENU: SLIDERS,
-                    "chinTipPosition": -1,
-                    "chinLength": -1,
-                    "chinProtrusion": -1,
-                    "chinDepth": -1,
-                    "chinSize": -1,
-                    "chinHeight": -1,
-                    "chinWidth": -1
-                },
-                "jaw": {
-                    MENU: SLIDERS,
-                    "jawProtrusion": -1,
-                    "jawWidth": -1,
-                    "lowerJaw": -1,
-                    "jawContour": -1
-                }
-            },
-            "hair/facialHair": {
-                "isLinked": True,
-                "hair/brow/beard": {
-                    MENU: COLORS,
-                    LINKTYPE: "linked",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                },
-                "hair": {
-                    MENU: TILES,
-                    LINKTYPE: "all",
-                    "numTiles": 24,
-                    "folder": "hair",
-                    "value": -1
-                },
-                "hairColor": {
-                    MENU: COLORS,
-                    LINKTYPE: "unlinked",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                },
-                "brow": {
-                    MENU: TILES,
-                    LINKTYPE: "all",
-                    "numTiles": 17,
-                    "folder": "brow",
-                    "value": -1
-                },
-                "browColor": {
-                    MENU: COLORS,
-                    LINKTYPE: "unlinked",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                },
-                "beard": {
-                    MENU: TILES,
-                    LINKTYPE: "all",
-                    "numTiles": 12,
-                    "folder": "beard",
-                    "value": -1
-                },
-                "beardColor": {
-                    MENU: COLORS,
-                    LINKTYPE: "unlinked",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                },
-                "eyelashes": {
-                    MENU: TILES,
-                    LINKTYPE: "all",
-                    "numTiles": 4,
-                    "folder": "eyelashes",
-                    "value": -1
-                },
-                "eyelashColor": {
-                    MENU: COLORS,
-                    LINKTYPE: "all",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                }
-            },
-            "pupils": {
-                "isLinked": True,
-                "pupils": {
-                    MENU: TILES,
-                    LINKTYPE: "linked",
-                    "numTiles": 9,
-                    "folder": "pupil",
-                    "value": -1
-                },
-                "colorOfPupils": {
-                    MENU: COLORS,
-                    LINKTYPE: "linked",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                },
-                "rightPupil": {
-                    MENU: TILES,
-                    LINKTYPE: "unlinked",
-                    "numTiles": 9,
-                    "folder": "pupil",
-                    "value": -1
-                },
-                "rightPupilColor": {
-                    MENU: COLORS,
-                    LINKTYPE: "unlinked",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                },
-                "leftPupil": {
-                    MENU: TILES,
-                    LINKTYPE: "unlinked",
-                    "numTiles": 9,
-                    "folder": "pupil",
-                    "value": -1
-                },
-                "leftPupilColor": {
-                    MENU: COLORS,
-                    LINKTYPE: "unlinked",
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                }
-            },
-            "cosmetics": {
-                MENU:SLIDERS,
-                "toneAroundEyes": -1,
-                "eyeSocket": -1,
-                "eyelidBrightness": -1,
-                "eyelidColor": -1,
-                "eyeliner": -1,
-                "eyeShadow": -1,
-                "lipstick1": -1,
-                "lipstick2": -1
-            },
-            "tattoo/mark": {
-                "tattoo/mark": {
-                    MENU: TILES,
-                    "numTiles": 50,
-                    "folder": "tattoo",
-                    "value": -1
-                },
-                "tattoo/markColor": {
-                    MENU: COLORS,
-                    "red": -1,
-                    "green": -1,
-                    "blue": -1
-                },
-                "tweakTattoo/mark": {
-                    MENU: SLIDERS,
-                    "position(Vertical)": -1,
-                    "position(Horizontal)": -1,
-                    "angle": -1,
-                    "expansion": -1
-                }
-            }
-                
-        }
-    }
-    return template
 def setSliders(values):
+    mh.enterDelay()
     for i in range(len(values)):
         if values[i] != -1: # ignore if user didn't set a value in json
             text,confidence = mh.processRegion(*mh.sliderRegions[i], True)

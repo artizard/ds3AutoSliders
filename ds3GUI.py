@@ -14,7 +14,7 @@ class GUI:
         self.buttonsWidth = int(self.windowWidth / 3)
         self.selectWidth = int((2 * self.windowWidth) / 3)
         self.paneHeight = int(self.windowHeight * .6)
-        self.dictionary = importCharacter.getDictTemplate()
+        self.dictionary = mh.getDictTemplate()
         self.backDictionary = [self.dictionary]
 
         """keeps track of the key names of the different menus so you can traverse backwards and still know
