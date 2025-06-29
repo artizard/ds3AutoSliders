@@ -4,6 +4,7 @@ import importCharacter
 import exportCharacter
 from manualPanes import Sliders, Colors, Labels, Dropdown, Tiles, spaceFormat
 import macroHelpers as mh
+import time
 class GUI:
     def __init__(self):
         self.window = tk.Tk()

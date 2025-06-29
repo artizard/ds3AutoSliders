@@ -24,12 +24,16 @@ sliderRegions = ((.343,.203,.372,.226),
                      (.343,.610,.372,.633),
                      (.343,.692,.372,.715),
                      (.343,.773,.372,.796))
+tileCoords = [(.262,.225),(.3427,.225),(.4234,.225),
+              (.262,.3657),(.3427,.3657),(.4234,.3657),
+              (.262,.5019),(.3427,.5019),(.4234,.5019),
+              (.262,.6389),(.3427,.6389),(.4234,.6389),
+              (.262,.7731),(.3427,.7731),(.4234,.7731),]
 def enter():
     pydirectinput.press('e')
 def back():
     pydirectinput.press('q')
 def down():
-    print("down")
     pydirectinput.press('down')
 def up():
     pydirectinput.press('up')
@@ -40,7 +44,7 @@ def animDelay():
     time.sleep(.5)
 def enterDelay():
     time.sleep(.3)
-def isSelected(x, y):
+def isSelected(x,y):
     """finds if box is selected (is orange), by pixel at ratio x and y"""
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
@@ -49,7 +53,8 @@ def isSelected(x, y):
     width = 1
     height = 1
     desiredColor = (86,39,11)
-    tolerance = 40
+    #tolerance = 40
+    tolerance = 50
     with mss.mss() as sct:
         mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
         screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
@@ -150,6 +155,31 @@ def saveFile(filePath, dict):
     with open(filePath, "w") as f:
         f.write(jsonString)
         print("saved")
+def menuHasValues(menu):
+    if "menu" in menu: # if page with values (not a buttons page)
+        for i in menu:
+            if i not in ("menu", "options", "isLinked", "linkType", "numTiles", "folder") and menu[i] not in (-1, ""):
+                return True # value is set 
+        return False # no values set
+    for i in menu:
+        if i in "isLinked":
+            continue
+        if menuHasValues(menu[i]):
+            return True # value was found 
+    return False
+def findSelectedTile():
+    pass
+def currentPageTile():
+    """finds which tile is currently selected on the current page (1-15), does not account for the scroll bar """
+    j = 1
+    for i in tileCoords:
+        if isSelected(*i):
+            return j
+        j +=1
+    # call again if none found - this could cause an infinite loop but that shouldn't be a real issue 
+    time.sleep(.1)
+    return currentPageTile()
+
 def getDictTemplate():
     DROPDOWN = "dropdown"
     SLIDERS = "sliders"

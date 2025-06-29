@@ -157,12 +157,15 @@ def importMacro(menu):
             case _:
                 print("invalid json error")
                 return
-    elif "isLinked" in menu:
+    elif "isLinked" in menu: # linked button menu 
         linkedImportMacro(menu, menu["isLinked"])
         mh.back()
-    else:
+    else: # non linked button menu 
         # recurse into next submenu 
         for nextMenu in menu:
+            if not mh.menuHasValues(menu[nextMenu]):
+                mh.down()
+                continue
             mh.enter()
             importMacro(menu[nextMenu])
             mh.down()
@@ -173,6 +176,9 @@ def linkedImportMacro(menu, isLinked):
     for nextMenu in menu:
         if nextMenu == "isLinked":
             continue
+        if not mh.menuHasValues(menu[nextMenu]):
+                mh.down()
+                continue
         elif isLinked:
             if menu[nextMenu]["linkType"] in ("all", "linked"):
                 mh.enter()
