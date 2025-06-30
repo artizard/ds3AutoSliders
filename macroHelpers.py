@@ -8,6 +8,7 @@ import numpy
 import easyocr
 import json
 import re
+import colorsys
 # some things for import and export that need to be run before using. 
 #pydirectinput.PAUSE = 0.0167 # The game can only register 1 input per frame, so the pause is ~1/60 
 #pydirectinput.PAUSE = 0.017
@@ -60,13 +61,33 @@ def isSelected(x,y,desiredColor,tolerance):
         r,g,b = screenshot.getpixel((0,0))
         print("desired:", desiredColor)
         print("actual:",r,g,b)
-        if abs(desiredColor[0] - r) > tolerance + 20: 
-            return False
-        if abs(desiredColor[1] - g) > tolerance:
-            return False
-        if abs(desiredColor[2] - b) > tolerance:
-            return False
+        return isColor(r,g,b,desiredColor,tolerance)
+        
+def isColor(r,g,b, desiredColor, tolerance):
+    """Returns whether the color matches the desired color or not, applies tolerance system"""
+    # if abs(desiredColor[0] - r) > tolerance + 20: 
+    #         return False
+    # if abs(desiredColor[1] - g) > tolerance:
+    #     return False
+    # if abs(desiredColor[2] - b) > tolerance:
+    #     return False
+    # return True
+
+    # totalDifference = 0
+    # totalDifference += abs(desiredColor[0]-r)
+    # totalDifference += abs(desiredColor[1]-g)
+    # totalDifference += abs(desiredColor[2]-b)
+    # if totalDifference < tolerance:
+    #     return True
+    # else:
+    #     return False
+    actualHue = colorsys.rgb_to_hls(r/255,g/255,b/255)[0]
+    desiredHue = colorsys.rgb_to_hls(desiredColor[0]/255,desiredColor[1]/255,desiredColor[2]/255)[0]
+    if abs(desiredHue - actualHue) < tolerance:
         return True
+    else:
+        return False
+
 def loadOCR():
     global ocrOpened
     if ocrOpened:
@@ -184,7 +205,7 @@ def findTilePage(menu):
     pageNum = 1
     scrollBottom = .832 # position of the bottom of where the scroll bar can go 
     while sliderPos < scrollBottom:
-        if isSelected(.5026, sliderPos, (131,91,31), 45):
+        if isSelected(.5026, sliderPos, (131,91,31), .05):
             return pageNum
         sliderPos += scrollAmount
         pageNum += 1
@@ -196,7 +217,7 @@ def currentTileOnPage():
     """finds which tile is currently selected on the current page (1-15), does not account for the scroll bar """
     j = 1
     for i in tileCoords:
-        if isSelected(*i, (86,39,11),35):
+        if isSelected(*i, (86,39,11),.05):
             return j
         j +=1
     # call again if none found - this could cause an infinite loop but that shouldn't be a real issue 

@@ -55,7 +55,7 @@ def colorSliders(r,g,b):
 def twoBoxes(option):
     """value 1 is the first box, 2 is second """
     time.sleep(.07)
-    if mh.isSelected(.439, .301, (86,39,11),45):
+    if mh.isSelected(.439, .301, (86,39,11),.05):
         current = 1
     else:
         current = 2
@@ -68,9 +68,9 @@ def twoBoxes(option):
 def threeBoxes(option):
     """value 1 is the first box, 2 is second, 3 is third """
     time.sleep(.05)
-    if mh.isSelected(.439, .301, (86,39,11),45):
+    if mh.isSelected(.439, .301, (86,39,11),.05):
         current = 1
-    elif mh.isSelected(.439, .347, (86,39,11),45):
+    elif mh.isSelected(.439, .347, (86,39,11),.05):
         current = 2
     else:
         current = 3

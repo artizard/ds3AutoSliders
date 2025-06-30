@@ -7,15 +7,15 @@ import macroHelpers as mh
 import time
 class GUI:
     def __init__(self):
-        mh.loadOCR()
-        while True:
-            print("start")
-            time.sleep(.2242)
-            mh.findSelectedTile({
-                    "numTiles": 4,
-                    "folder": "pupil",
-                    "value": -1})
-        quit()
+        # mh.loadOCR()
+        # while True:
+        #     print("start")
+        #     time.sleep(.2242)
+        #     mh.findSelectedTile({
+        #             "numTiles": 4,
+        #             "folder": "hair",
+        #             "value": -1})
+        # quit()
         self.window = tk.Tk()
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")
@@ -94,7 +94,8 @@ class GUI:
         """Create the frame and widgets for the export page"""
         exportPage = tk.Frame(self.window)
         tk.Label(exportPage, text="Export page").pack() # page title
-        tk.Button(exportPage, text="choose where to save to", command=self.saveFile).pack() # open file location button 
+        tk.Button(exportPage, text="choose where to save to", command=self.openExportSaveLocation).pack() # open file location button 
+        self.exportFilePath = None
         self.exportStartButton = tk.Button(exportPage, text="start", command=lambda:print("self.importCommand"), state="disabled")
         self.exportStartButton.pack()
         tk.Button(exportPage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise()).pack() # back button 
@@ -247,3 +248,11 @@ class GUI:
             print("INVALID PATH")
             return
         mh.saveFile(savePath, self.dictionary)
+    def openExportSaveLocation(self):
+        self.exportFilePath = filedialog.asksaveasfilename(defaultextension=".json", 
+                                                filetypes=[("JSON files", "*.json")], 
+                                                title="Save Character File")
+        if (self.exportFilePath):
+            self.exportStartButton.config(state="active")
+        else:
+            self.exportStartButton.config(state="disabled")
