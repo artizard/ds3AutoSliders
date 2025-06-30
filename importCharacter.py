@@ -55,7 +55,7 @@ def colorSliders(r,g,b):
 def twoBoxes(option):
     """value 1 is the first box, 2 is second """
     time.sleep(.07)
-    if mh.isSelected(.439, .301):
+    if mh.isSelected(.439, .301, (86,39,11),45):
         current = 1
     else:
         current = 2
@@ -68,9 +68,9 @@ def twoBoxes(option):
 def threeBoxes(option):
     """value 1 is the first box, 2 is second, 3 is third """
     time.sleep(.05)
-    if mh.isSelected(.439, .301):
+    if mh.isSelected(.439, .301, (86,39,11),45):
         current = 1
-    elif mh.isSelected(.439, .347):
+    elif mh.isSelected(.439, .347, (86,39,11),45):
         current = 2
     else:
         current = 3
@@ -86,16 +86,62 @@ def threeBoxes(option):
             for i in range(abs(steps)):
                 mh.up()
         mh.enter()
-def tileSet(value,sleepTime):
-    value -= 1
-    pydirectinput.keyDown('left')
-    time.sleep(sleepTime) # reset reset position 
-    pydirectinput.keyUp('left')
-    for i in range(int(value / 3)):
-        mh.down()
-    for i in range(value % 3):
+# def tileSet(value,sleepTime):
+#     value -= 1
+#     pydirectinput.keyDown('left')
+#     time.sleep(sleepTime) # reset reset position 
+#     pydirectinput.keyUp('left')
+#     for i in range(int(value / 3)):
+#         mh.down()
+#     for i in range(value % 3):
+#         pydirectinput.press('right')
+#     mh.enter()
+def tileSet(menu):
+    value = menu["value"] - 1 
+    currentTile = mh.findSelectedTile(menu) - 1 
+    # print("current:",currentTile)
+    # print("numTiles:",menu["numTiles"])
+    if currentTile == (menu["numTiles"] - 1):
+        print("last tile")
         pydirectinput.press('right')
+        currentTile = 0
+
+    valueX = value % 3
+    valueY = int(value / 3)
+    currentTileX = currentTile % 3
+    currentTileY = int(currentTile / 3)
+    xOffset = valueX - currentTileX
+    yOffset = valueY - currentTileY
+
+    if xOffset < 0:
+        isxOffsetNegative = True
+    else:
+        isxOffsetNegative = False
+    print("x :", xOffset)
+    xOffset = abs(xOffset)
+    
+    if yOffset < 0:
+        isyOffsetNegative = True
+    else:
+        isyOffsetNegative = False
+    print("y :", yOffset)
+    yOffset = abs(yOffset)
+
+    for i in range(yOffset):
+        time.sleep(.1)
+        if isyOffsetNegative:
+            pydirectinput.press('up')
+        else:
+            pydirectinput.press('down')
+    for i in range(xOffset):
+        time.sleep(.1)
+        if isxOffsetNegative:
+            pydirectinput.press('left')
+        else:
+            pydirectinput.press('right')
+
     mh.enter()
+
 def dropdownMenu(menu):
     if menu["options"][0] == "male":
         isGender = True # the gender menu in particular has an animation delay, so we
@@ -135,12 +181,7 @@ def tileMenu(menu):
     if menu["value"] == -1:
         mh.back()
         return
-    if menu["folder"] == "eyelashes": # extra delay for this particular page 
-        sleepMultiplier = .125
-    else:
-        sleepMultiplier = .0918
-    sleepTime = menu["numTiles"] * sleepMultiplier
-    tileSet(menu["value"], sleepTime)
+    tileSet(menu)
 def importMacro(menu):
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()

@@ -24,11 +24,12 @@ sliderRegions = ((.343,.203,.372,.226),
                      (.343,.610,.372,.633),
                      (.343,.692,.372,.715),
                      (.343,.773,.372,.796))
-tileCoords = [(.262,.225),(.3427,.225),(.4234,.225),
-              (.262,.3657),(.3427,.3657),(.4234,.3657),
-              (.262,.5019),(.3427,.5019),(.4234,.5019),
-              (.262,.6389),(.3427,.6389),(.4234,.6389),
-              (.262,.7731),(.3427,.7731),(.4234,.7731),]
+tileCoords = [(.2625,.225),(.3427,.225),(.4234,.225),
+              (.2625,.3657),(.3427,.3657),(.4234,.3657),
+              (.2625,.5019),(.3427,.5019),(.4234,.5019),
+              (.2625,.6389),(.3427,.6389),(.4234,.6389),
+              (.2625,.7731),(.3427,.7731),(.4234,.7731),]
+tileScrollAmounts = {"hair":.0835,"brow":.1115,"beard":0,"eyelashes":0,"tattoo":.042, "pupil": 0} # how much the scroll bar moves per page, used to find the tile selected 
 def enter():
     pydirectinput.press('e')
 def back():
@@ -44,7 +45,7 @@ def animDelay():
     time.sleep(.5)
 def enterDelay():
     time.sleep(.3)
-def isSelected(x,y):
+def isSelected(x,y,desiredColor,tolerance):
     """finds if box is selected (is orange), by pixel at ratio x and y"""
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
@@ -52,15 +53,14 @@ def isSelected(x,y):
     top = int(rectCoords[1] + y * clientRect[3])
     width = 1
     height = 1
-    desiredColor = (86,39,11)
-    #tolerance = 40
-    tolerance = 50
     with mss.mss() as sct:
         mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
         screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
         # mss.tools.to_png(mssScreenshot.rgb, mssScreenshot.size, output="pixelScreenshot.png")
         r,g,b = screenshot.getpixel((0,0))
-        if abs(desiredColor[0] - r) > tolerance:
+        print("desired:", desiredColor)
+        print("actual:",r,g,b)
+        if abs(desiredColor[0] - r) > tolerance + 20: 
             return False
         if abs(desiredColor[1] - g) > tolerance:
             return False
@@ -167,18 +167,42 @@ def menuHasValues(menu):
         if menuHasValues(menu[i]):
             return True # value was found 
     return False
-def findSelectedTile():
-    pass
-def currentPageTile():
+def findSelectedTile(menu):
+    page = findTilePage(menu)
+    print("page:", page)
+    tile = currentTileOnPage()
+    print("tile:", tile)
+    print("final:", (tile + (page-1)*3))
+    if page and tile: # if not null 
+        return tile + (page-1)*3  
+def findTilePage(menu):
+    specificMenu = menu["folder"]
+    scrollAmount = tileScrollAmounts[specificMenu]
+    if scrollAmount == 0: # page without scrollbar 
+        return 1
+    sliderPos = .167
+    pageNum = 1
+    scrollBottom = .832 # position of the bottom of where the scroll bar can go 
+    while sliderPos < scrollBottom:
+        if isSelected(.5026, sliderPos, (131,91,31), 45):
+            return pageNum
+        sliderPos += scrollAmount
+        pageNum += 1
+    # failsafe
+    print("ERROR: no slider found")
+    time.sleep(.1)
+    return findTilePage(menu)
+def currentTileOnPage():
     """finds which tile is currently selected on the current page (1-15), does not account for the scroll bar """
     j = 1
     for i in tileCoords:
-        if isSelected(*i):
+        if isSelected(*i, (86,39,11),35):
             return j
         j +=1
     # call again if none found - this could cause an infinite loop but that shouldn't be a real issue 
     time.sleep(.1)
-    return currentPageTile()
+    print("none found")
+    return currentTileOnPage()
 
 def getDictTemplate():
     DROPDOWN = "dropdown"

@@ -7,6 +7,15 @@ import macroHelpers as mh
 import time
 class GUI:
     def __init__(self):
+        mh.loadOCR()
+        while True:
+            print("start")
+            time.sleep(.2242)
+            mh.findSelectedTile({
+                    "numTiles": 4,
+                    "folder": "pupil",
+                    "value": -1})
+        quit()
         self.window = tk.Tk()
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")
