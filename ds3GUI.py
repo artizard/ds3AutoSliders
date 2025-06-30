@@ -96,7 +96,7 @@ class GUI:
         tk.Label(exportPage, text="Export page").pack() # page title
         tk.Button(exportPage, text="choose where to save to", command=self.openExportSaveLocation).pack() # open file location button 
         self.exportFilePath = None
-        self.exportStartButton = tk.Button(exportPage, text="start", command=lambda:print("self.importCommand"), state="disabled")
+        self.exportStartButton = tk.Button(exportPage, text="start", command=self.exportCommand, state="disabled")
         self.exportStartButton.pack()
         tk.Button(exportPage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise()).pack() # back button 
         return exportPage
@@ -256,3 +256,6 @@ class GUI:
             self.exportStartButton.config(state="active")
         else:
             self.exportStartButton.config(state="disabled")
+    def exportCommand(self):
+        dict = exportCharacter.exportCharacter()
+        mh.saveFile(self.exportFilePath, dict)

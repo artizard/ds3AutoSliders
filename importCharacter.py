@@ -86,16 +86,6 @@ def threeBoxes(option):
             for i in range(abs(steps)):
                 mh.up()
         mh.enter()
-# def tileSet(value,sleepTime):
-#     value -= 1
-#     pydirectinput.keyDown('left')
-#     time.sleep(sleepTime) # reset reset position 
-#     pydirectinput.keyUp('left')
-#     for i in range(int(value / 3)):
-#         mh.down()
-#     for i in range(value % 3):
-#         pydirectinput.press('right')
-#     mh.enter()
 def tileSet(menu):
     value = menu["value"] - 1 
     currentTile = mh.findSelectedTile(menu) - 1 
@@ -141,7 +131,6 @@ def tileSet(menu):
             pydirectinput.press('right')
 
     mh.enter()
-
 def dropdownMenu(menu):
     if menu["options"][0] == "male":
         isGender = True # the gender menu in particular has an animation delay, so we
@@ -168,7 +157,6 @@ def dropdownMenu(menu):
         case 3:
             threeBoxes(desiredValue)
 def sliderMenu(menu):
-    numSliders = len(menu) - 1 # subtract out menu key
     sliderValues = []
     for i in menu:
         if i != "menu":
@@ -197,7 +185,7 @@ def importMacro(menu):
                 tileMenu(menu)
             case _:
                 print("invalid json error")
-                return
+                quit()
     elif "isLinked" in menu: # linked button menu 
         linkedImportMacro(menu, menu["isLinked"])
         mh.back()
