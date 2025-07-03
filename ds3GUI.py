@@ -16,6 +16,22 @@ class GUI:
         #             "folder": "hair",
         #             "value": -1})
         # quit()
+        # sliderRegions = ((.3445,.203,.372,.226),
+        #              (.3445,.285,.372,.308),
+        #              (.3445,.366,.372,.389),
+        #              (.3445,.448,.372,.471),
+        #              (.3445,.529,.372,.552),
+        #              (.3445,.610,.372,.633),
+        #              (.3445,.692,.372,.715),
+        #              (.3445,.773,.372,.796))
+        # mh.loadOCR()
+        # while True:
+        #     input()
+        #     #time.sleep(2)
+        #     for i in sliderRegions:
+        #         mh.processRegion(*i)
+            
+        # quit()
         self.window = tk.Tk()
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")

@@ -4,11 +4,13 @@ import time
 import win32gui
 import mss
 from PIL import Image, ImageOps, ImageEnhance
-import numpy
-import easyocr
 import json
 import re
 import colorsys
+import onnxruntime as ort
+import numpy as np
+import scipy.special
+
 # some things for import and export that need to be run before using. 
 #pydirectinput.PAUSE = 0.0167 # The game can only register 1 input per frame, so the pause is ~1/60 
 #pydirectinput.PAUSE = 0.017
@@ -17,14 +19,17 @@ ctypes.windll.user32.SetProcessDPIAware()
 hwnd = None
 reader = None
 ocrOpened = False
-sliderRegions = ((.343,.203,.372,.226),
-                     (.343,.285,.372,.307),
-                     (.343,.366,.372,.389),
-                     (.343,.448,.372,.470),
-                     (.343,.529,.372,.552),
-                     (.343,.610,.372,.633),
-                     (.343,.692,.372,.715),
-                     (.343,.773,.372,.796))
+model = None
+input_name = None
+
+sliderRegions = ((.3445,.203,.372,.226),
+                     (.3445,.285,.372,.308),
+                     (.3445,.366,.372,.389),
+                     (.3445,.448,.372,.471),
+                     (.3445,.529,.372,.552),
+                     (.3445,.610,.372,.633),
+                     (.3445,.692,.372,.715),
+                     (.3445,.773,.372,.796))
 tileCoords = [(.2625,.225),(.3427,.225),(.4234,.225),
               (.2625,.3657),(.3427,.3657),(.4234,.3657),
               (.2625,.5019),(.3427,.5019),(.4234,.5019),
@@ -61,56 +66,44 @@ def isSelected(x,y,desiredColor,tolerance):
         r,g,b = screenshot.getpixel((0,0))
         print("desired:", desiredColor)
         print("actual:",r,g,b)
-        return isColor(r,g,b,desiredColor,tolerance)
-        
+        return isColor(r,g,b,desiredColor,tolerance) 
 def isColor(r,g,b, desiredColor, tolerance):
     """Returns whether the color matches the desired color or not, applies tolerance system"""
-    # if abs(desiredColor[0] - r) > tolerance + 20: 
-    #         return False
-    # if abs(desiredColor[1] - g) > tolerance:
-    #     return False
-    # if abs(desiredColor[2] - b) > tolerance:
-    #     return False
-    # return True
-
-    # totalDifference = 0
-    # totalDifference += abs(desiredColor[0]-r)
-    # totalDifference += abs(desiredColor[1]-g)
-    # totalDifference += abs(desiredColor[2]-b)
-    # if totalDifference < tolerance:
-    #     return True
-    # else:
-    #     return False
     actualHue = colorsys.rgb_to_hls(r/255,g/255,b/255)[0]
     desiredHue = colorsys.rgb_to_hls(desiredColor[0]/255,desiredColor[1]/255,desiredColor[2]/255)[0]
     if abs(desiredHue - actualHue) < tolerance:
         return True
     else:
         return False
-
 def loadOCR():
     global ocrOpened
     if ocrOpened:
         print("OCR already opened")
         time.sleep(3)
         return
+    
     startFullscreenWait = time.time()
-    print("memory load easyocr")
-    global reader
-    reader = easyocr.Reader(['ch_tra', 'en'], gpu=False)
-    print("ocr loaded")
+    print("starting fullscreen wait")
+
+    global model
+    global input_name
+    model = ort.InferenceSession("sliderValueDetect.onnx")
+    input_name = model.get_inputs()[0].name
+
     global hwnd
     hwnd = win32gui.FindWindow(None, "DARK SOULS III")
     if (hwnd == 0):
         print("error")
         quit()  
+
     endFullscreenWait = time.time()
+
     timeLeftToWait = 3 - (endFullscreenWait-startFullscreenWait)
     if (timeLeftToWait > 0):
         time.sleep(timeLeftToWait)
-    checkIfGameIsOpen() # check if open 
+    #checkIfGameIsOpen() # check if open 
     ocrOpened = True
-    return reader
+    return None
 def checkIfGameIsOpen():
     try:
         ageText,ageConfidence = processRegion(.156, .230, .206, .274, False)
@@ -121,49 +114,38 @@ def checkIfGameIsOpen():
     if (ageText != "Age" and defaultsText != "Defaults"):
         print("WRONG MENU")
         quit()
-def processRegion(x,y,x2,y2, isNum):
+def processRegion(x,y,x2,y2, isColor):
+    if isColor:
+        # PLACEHOLDER 
+        return 128, 1.0
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
-    #print(rectCoords)
+
     left = int(rectCoords[0] + x * clientRect[2])
-    #print("left:", left)
     top = int(rectCoords[1] + y * clientRect[3])
-    #print("top", top)
     width = int((x2-x) * clientRect[2])
-    #print("width", width)
     height = int((y2-y) * clientRect[3])
-    #print("height", height)
+
     with mss.mss() as sct:
         mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
         screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
         screenshot = ImageOps.grayscale(screenshot)
-        contraster = ImageEnhance.Contrast(screenshot)
-        screenshot = contraster.enhance(3.5)
-        # mss.tools.to_png(mssScreenshot.rgb, mssScreenshot.size, output="uneditedScreenshot.png")
-        # screenshot.save("testScreenshot.png", format="PNG")
 
-    results = reader.readtext(numpy.array(screenshot))
-    for _, text, confidence in results:
-        print(f"Text: {text} | Confidence: {confidence:.2f}")
-    # return 0 when text is not detected (main case where that happens)
-    if not results:
-        print("NOT DETECTED 0")
-        return 0, 1
-    # in case of low confidence 0
-    if results[0][1] == 0:
-        print("LOW CONFIDENCE 0")
-        return 0, 1
-    # return text, confidence 
-    # get rid of whitespace, avoid l vs 1 confusion
-    result = (results[0][1]).replace(" ", "")
-    if (isNum):
-        result = result.replace("l", "1")
-        result = result.replace("O", "0")
-    else:
-        result = result.replace("1", "l")
-        result = result.replace("0", "O")
+    resized = ImageOps.fit(screenshot, (35, 17), method=Image.LANCZOS, centering=(0.5, 0.5))
+    imageArray = np.array(resized).astype(np.float32)
+    imageArray = imageArray.reshape(1, 17, 35, 1)
 
-    return result, results[0][2]
+    resized.save("testInput.png") # DEBUG
+
+    outputs = model.run(None, {input_name: imageArray})
+    logits = outputs[0]
+
+    probs = scipy.special.softmax(logits, axis=1)
+
+    answer = np.argmax(probs)
+    confidence = probs[0][answer]
+
+    return answer, confidence
 def saveFile(filePath, dict):
     def stripNewLine(m):
         """gets rid of \n characters as well as the extra spaces"""
@@ -224,7 +206,6 @@ def currentTileOnPage():
     time.sleep(.1)
     print("none found")
     return currentTileOnPage()
-
 def getDictTemplate():
     DROPDOWN = "dropdown"
     SLIDERS = "sliders"

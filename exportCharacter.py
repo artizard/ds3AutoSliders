@@ -47,7 +47,7 @@ def sliderMenu(menu):
         if i != "menu":
             confidence = 0
             while confidence < .2:
-                text, confidence = mh.processRegion(*mh.sliderRegions[j], True)
+                text, confidence = mh.processRegion(*mh.sliderRegions[j], False)
             menu[i] = int(text)
             j += 1
     mh.back()

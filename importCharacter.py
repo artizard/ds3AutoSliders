@@ -16,12 +16,9 @@ def adjust(direction, isShift):
 def setVal(value, startNum, confidence):
     print("text :", startNum)
     print("confidence :", confidence)
-    if (value > 255 or value < 0):
-        print("error")
-        return
-    if (confidence < .5):
+    if (confidence < .8):
         print("LOW CONFIDENCE - BACKUP METHOD USED")
-        time.sleep(2)
+        time.sleep(10)
         # reset slider
         for i in range(26):
             adjust('left', True)
@@ -229,7 +226,7 @@ def setSliders(values):
     mh.enterDelay()
     for i in range(len(values)):
         if values[i] != -1: # ignore if user didn't set a value in json
-            text,confidence = mh.processRegion(*mh.sliderRegions[i], True)
+            text,confidence = mh.processRegion(*mh.sliderRegions[i], False)
             setVal(values[i],text,confidence)
         mh.down() # go down regardless 
     mh.enter()
