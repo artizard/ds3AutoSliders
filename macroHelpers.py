@@ -3,7 +3,7 @@ import pydirectinput
 import time
 import win32gui
 import mss
-from PIL import Image, ImageOps, ImageEnhance
+from PIL import Image, ImageOps
 import json
 import re
 import colorsys
@@ -19,8 +19,10 @@ ctypes.windll.user32.SetProcessDPIAware()
 hwnd = None
 reader = None
 ocrOpened = False
-model = None
-input_name = None
+sliderModel = None
+sliderInput_name = None
+colorModel = None
+colorInput_name = None
 
 sliderRegions = ((.3445,.203,.372,.226),
                      (.3445,.285,.372,.308),
@@ -85,10 +87,14 @@ def loadOCR():
     startFullscreenWait = time.time()
     print("starting fullscreen wait")
 
-    global model
-    global input_name
-    model = ort.InferenceSession("sliderValueDetect.onnx")
-    input_name = model.get_inputs()[0].name
+    global sliderModel
+    global sliderInput_name
+    sliderModel = ort.InferenceSession("sliderValueDetect.onnx")
+    sliderInput_name = sliderModel.get_inputs()[0].name
+    global colorModel
+    global colorInput_name
+    colorModel = ort.InferenceSession("colorValueDetect.onnx")
+    colorInput_name = colorModel.get_inputs()[0].name
 
     global hwnd
     hwnd = win32gui.FindWindow(None, "DARK SOULS III")
@@ -115,9 +121,6 @@ def checkIfGameIsOpen():
         print("WRONG MENU")
         quit()
 def processRegion(x,y,x2,y2, isColor):
-    if isColor:
-        # PLACEHOLDER 
-        return 128, 1.0
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
 
@@ -137,14 +140,20 @@ def processRegion(x,y,x2,y2, isColor):
 
     resized.save("testInput.png") # DEBUG
 
-    outputs = model.run(None, {input_name: imageArray})
-    logits = outputs[0]
+    if isColor:
+        outputs = colorModel.run(None, {colorInput_name: imageArray})
+        logits = outputs[0]
+        print("COLOR")
+    else:
+        outputs = sliderModel.run(None, {sliderInput_name: imageArray})
+        logits = outputs[0]
+        print("SLIDER")
 
     probs = scipy.special.softmax(logits, axis=1)
 
     answer = np.argmax(probs)
     confidence = probs[0][answer]
-
+    
     return answer, confidence
 def saveFile(filePath, dict):
     def stripNewLine(m):
