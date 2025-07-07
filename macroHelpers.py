@@ -23,6 +23,8 @@ sliderModel = None
 sliderInput_name = None
 colorModel = None
 colorInput_name = None
+gameOpenModel = None
+gameOpenInput_name = None
 
 sliderRegions = ((.3445,.203,.372,.226),
                      (.3445,.285,.372,.308),
@@ -82,6 +84,9 @@ def loadOCR():
     if ocrOpened:
         print("OCR already opened")
         time.sleep(3)
+        if not checkIfGameIsOpen():
+            print("GAME NOT OPEN OR OPENED TO WRONG MENU")
+            quit()
         return
     
     startFullscreenWait = time.time()
@@ -89,12 +94,16 @@ def loadOCR():
 
     global sliderModel
     global sliderInput_name
-    sliderModel = ort.InferenceSession("sliderValueDetect.onnx")
+    sliderModel = ort.InferenceSession("models/sliderValueDetect.onnx")
     sliderInput_name = sliderModel.get_inputs()[0].name
     global colorModel
     global colorInput_name
-    colorModel = ort.InferenceSession("colorValueDetect.onnx")
+    colorModel = ort.InferenceSession("models/colorValueDetect.onnx")
     colorInput_name = colorModel.get_inputs()[0].name
+    global gameOpenModel
+    global gameOpenInput_name
+    gameOpenModel = ort.InferenceSession("models/gameOpenDetect.onnx")
+    gameOpenInput_name = gameOpenModel.get_inputs()[0].name
 
     global hwnd
     hwnd = win32gui.FindWindow(None, "DARK SOULS III")
@@ -107,19 +116,39 @@ def loadOCR():
     timeLeftToWait = 3 - (endFullscreenWait-startFullscreenWait)
     if (timeLeftToWait > 0):
         time.sleep(timeLeftToWait)
-    #checkIfGameIsOpen() # check if open 
+    if not checkIfGameIsOpen():
+        print("GAME NOT OPEN OR OPENED TO WRONG MENU")
+        quit()
+
     ocrOpened = True
     return None
 def checkIfGameIsOpen():
-    try:
-        ageText,ageConfidence = processRegion(.156, .230, .206, .274, False)
-        defaultsText,defaultsConfidence = processRegion(.133, .644, .200, .691, False)
-    except: 
-        print("GAME NOT OPEN")
-        quit()
-    if (ageText != "Age" and defaultsText != "Defaults"):
-        print("WRONG MENU")
-        quit()
+    x,y,x2,y2 = (.0469,.1333,.4992,.7153)
+    clientRect = win32gui.GetClientRect(hwnd)
+    rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
+
+    left = int(rectCoords[0] + x * clientRect[2])
+    top = int(rectCoords[1] + y * clientRect[3])
+    width = int((x2-x) * clientRect[2])
+    height = int((y2-y) * clientRect[3])
+
+    with mss.mss() as sct:
+        mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+        screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
+    resized = ImageOps.fit(screenshot, (290, 210), method=Image.LANCZOS, centering=(0.5, 0.5))
+    imageArray = np.array(resized).astype(np.float32)
+    imageArray = imageArray.reshape(1, 210, 290, 3)
+
+    resized.save("testOpenDetection.png") # DEBUG
+
+    outputs = gameOpenModel.run(None, {gameOpenInput_name: imageArray})
+    logits = outputs[0]
+    prob = scipy.special.expit(logits)[0][0]
+
+    if prob > .5:
+        return True # correct menu open
+    else:
+        return False # game not open or incorrect menu 
 def processRegion(x,y,x2,y2, isColor):
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))

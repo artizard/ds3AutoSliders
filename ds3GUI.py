@@ -30,8 +30,7 @@ class GUI:
         #     #time.sleep(2)
         #     for i in sliderRegions:
         #         mh.processRegion(*i)
-            
-        # quit()
+
         self.window = tk.Tk()
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")
