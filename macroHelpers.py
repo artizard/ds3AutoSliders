@@ -10,6 +10,7 @@ import colorsys
 import onnxruntime as ort
 import numpy as np
 import scipy.special
+from tkinter import messagebox
 
 # some things for import and export that need to be run before using. 
 #pydirectinput.PAUSE = 0.0167 # The game can only register 1 input per frame, so the pause is ~1/60 
@@ -85,9 +86,9 @@ def loadOCR():
         print("OCR already opened")
         time.sleep(3)
         if not checkIfGameIsOpen():
-            print("GAME NOT OPEN OR OPENED TO WRONG MENU")
-            quit()
-        return
+            notOpenedMessage()
+            return False
+        return True
     
     startFullscreenWait = time.time()
     print("starting fullscreen wait")
@@ -116,12 +117,11 @@ def loadOCR():
     timeLeftToWait = 3 - (endFullscreenWait-startFullscreenWait)
     if (timeLeftToWait > 0):
         time.sleep(timeLeftToWait)
-    if not checkIfGameIsOpen():
-        print("GAME NOT OPEN OR OPENED TO WRONG MENU")
-        quit()
-
+    if not checkIfGameIsOpen() or hwnd == 0:
+        notOpenedMessage()
+        return False
     ocrOpened = True
-    return None
+    return True
 def checkIfGameIsOpen():
     x,y,x2,y2 = (.0469,.1333,.4992,.7153)
     clientRect = win32gui.GetClientRect(hwnd)
@@ -244,6 +244,8 @@ def currentTileOnPage():
     time.sleep(.1)
     print("none found")
     return currentTileOnPage()
+def notOpenedMessage():
+    messagebox.showwarning("ERROR", "The game was either not opened, or was opened to the wrong menu.")
 def getDictTemplate():
     DROPDOWN = "dropdown"
     SLIDERS = "sliders"

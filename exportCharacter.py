@@ -115,7 +115,9 @@ def linkedExportMacro(menu, isLinked):
         mh.down()
 def exportCharacter():
     dict = mh.getDictTemplate()
-    mh.loadOCR()
+    openedCorrectly = mh.loadOCR()
+    if not openedCorrectly:
+        return False
     # reset position
     mh.back()
     mh.enter()

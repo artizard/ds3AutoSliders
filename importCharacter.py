@@ -217,11 +217,14 @@ def linkedImportMacro(menu, isLinked):
 def importCharacter(jsonPath):
     with open(jsonPath) as f:
         data = json.load(f)
-    mh.loadOCR()
+    openedCorrectly = mh.loadOCR()
+    if not openedCorrectly:
+        return False
     # reset position
     mh.back()
     mh.enter()
     importMacro(data)
+    return True
 def setSliders(values):
     mh.enterDelay()
     for i in range(len(values)):

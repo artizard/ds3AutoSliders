@@ -1,51 +1,57 @@
-import tkinter as tk
+import customtkinter as ctk
 from tkinter import filedialog
 import importCharacter
+from tkinter import font
+
 import exportCharacter
 from manualPanes import Sliders, Colors, Labels, Dropdown, Tiles, spaceFormat
 import macroHelpers as mh
 import time
+from PIL import Image
 class GUI:
     def __init__(self):
-        # mh.loadOCR()
-        # while True:
-        #     print("start")
-        #     time.sleep(.2242)
-        #     mh.findSelectedTile({
-        #             "numTiles": 4,
-        #             "folder": "hair",
-        #             "value": -1})
+        self.window = ctk.CTk()
+        # fonts = list(font.families())
+        # fonts.sort()
+        # print(fonts)
+        # if "" in fonts:
+        #     print("font available")
+        # else:
+        #     print("font NOT available")
         # quit()
-        # sliderRegions = ((.3445,.203,.372,.226),
-        #              (.3445,.285,.372,.308),
-        #              (.3445,.366,.372,.389),
-        #              (.3445,.448,.372,.471),
-        #              (.3445,.529,.372,.552),
-        #              (.3445,.610,.372,.633),
-        #              (.3445,.692,.372,.715),
-        #              (.3445,.773,.372,.796))
-        # mh.loadOCR()
-        # while True:
-        #     input()
-        #     #time.sleep(2)
-        #     for i in sliderRegions:
-        #         mh.processRegion(*i)
-
-        self.window = tk.Tk()
+        
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")
-
+        self.window.configure(fg_color="#0D0D0F")
+    
         self.initWindowSize()
-        self.buttonsWidth = int(self.windowWidth / 3)
-        self.selectWidth = int((2 * self.windowWidth) / 3)
-        self.paneHeight = int(self.windowHeight * .6)
+        
+        self.font = ("OptimusPrincepsSemiBold",int(self.screenHeight/70),"normal")
+        self.bigFont = ("OptimusPrincepsSemiBold",int(self.screenHeight/35),"normal")
+        self.smallButtonAttributes = {"fg_color":"#49473B","corner_radius":self.screenHeight/100, 
+                                 "hover_color":"#38362A","font":self.font, "width":self.screenHeight/7, 
+                                 "height":self.screenHeight/35}
+        self.buttonAttributes = {"fg_color":"#49473B","corner_radius":self.screenHeight/100, 
+                                 "hover_color":"#38362A","font":self.font, "width":self.screenHeight/5, 
+                                 "height":self.screenHeight/35}
+        self.bigButtonAttributes = {"fg_color":"#49473B","corner_radius":self.screenHeight/100, 
+                                 "hover_color":"#38362A","font":("OptimusPrincepsSemiBold",self.screenHeight/60,"normal"), 
+                                 "width":self.screenHeight/4, "height":self.screenHeight/18}
+        self.paneWidth = int(self.windowWidth / 1.11)
+        self.paneHeight = int(self.windowHeight / 1.5)
         self.dictionary = mh.getDictTemplate()
-        self.backDictionary = [self.dictionary]
 
+        """keeps track of the previous menus you were in so you can use the back button"""
+        self.backDictionary = [self.dictionary]
         """keeps track of the key names of the different menus so you can traverse backwards and still know
         the name of the parent key. """
         self.backMenuName = ["main menu"] 
+        """keeps track of the current menu"""
         self.currentMenu = self.dictionary
+
+        self.background = ctk.CTkImage(Image.open("images/ui/background.png"), size=(self.windowWidth,self.windowHeight))
+        ctk.CTkLabel(self.window, text="", image=self.background).grid(row=0,column=0,sticky="nsew")
+        #self.backgroundLabel
 
         self.pages = {}
         self.pages["main"] = self.createMainPage()
@@ -55,106 +61,138 @@ class GUI:
         self.pages["complete"] = self.createCompletePage()
         for i in self.pages.values():
             i.grid(row=0, column=0, sticky="nsew")
+            i.grid_columnconfigure(0, weight=1)
+            i.grid_rowconfigure(0, weight=1)
 
-        self.manualButtonPane = tk.Frame(self.pages["manual"],width=self.buttonsWidth,height=self.paneHeight)
-        self.manualButtonPane.grid(row=1,column=0,sticky="nsew")
-        self.manualBlankPane = tk.Frame(self.pages["manual"],width=self.selectWidth,height=self.paneHeight)
-        self.manualBlankPane.grid(row=1,column=1,sticky="nsew") 
+        self.manualButtonPane = ctk.CTkFrame(self.pages["manual"],width=int(self.windowWidth / 2.2),
+                                             height=int(self.windowHeight / 1.5), fg_color="transparent")
+        self.manualButtonPane.place(relx=.5,rely=.48, anchor="center")
+        self.manualButtonPane.grid_propagate(False)
+        self.manualBlankPane = ctk.CTkFrame(self.pages["manual"],width=int(self.windowWidth / 1.11),
+                                            height=int(self.windowHeight / 1.5), fg_color="transparent")
+        self.manualBlankPane.place(relx=.05,rely=.14)
 
         self.initButtons()
-        self.sliders = Sliders(self.pages["manual"], self.selectWidth, self.paneHeight)
-        self.colors = Colors(self.pages["manual"], self.selectWidth, self.paneHeight)
-        self.labels = Labels(self.pages["manual"], self.selectWidth, self.paneHeight)
-        self.dropdown = Dropdown(self.pages["manual"], self.selectWidth, self.paneHeight)
-        self.tiles = Tiles(self.pages["manual"], self.selectWidth, self.paneHeight)
+        self.sliders = Sliders(self.pages["manual"], int(self.windowWidth / 3.5), int(self.windowHeight / 1.5), self.font)
+        self.colors = Colors(self.pages["manual"], int(self.windowWidth / 1.11), int(self.windowHeight / 3), self.font)
+        self.labels = Labels(self.pages["manual"], int(self.windowWidth / 2.75), int(self.windowHeight / 1.5), self.font)
+        self.dropdown = Dropdown(self.pages["manual"], int(self.windowWidth / 3), int(self.windowHeight / 20), self.font)
+        self.tiles = Tiles(self.pages["manual"], int(self.windowWidth / 1.11), int(self.windowHeight / 2), self.bigFont)
 
-        self.pages["main"].tkraise()
-
-        self.pages["manual"].grid_columnconfigure(0, weight=1)
-        self.window.grid_columnconfigure(0, weight=1)
+        self.pages["main"].tkraise() 
 
         self.window.mainloop()
-
     def initWindowSize(self):
         """"Sets the scale and position of the window"""
         self.screenWidth = self.window.winfo_screenwidth()
         self.screenHeight = self.window.winfo_screenheight()
-        self.windowWidth = self.screenWidth // 4
-        self.windowHeight = int(self.screenWidth / 3.5)
+        self.windowWidth = self.screenHeight // (1.5 * 1.5)
+        self.windowHeight = int(self.screenHeight / (1.3886 * 1.5))
         windowX = self.screenWidth // 2
         windowY = self.screenHeight // 3
         self.window.geometry(str(self.windowWidth) + "x" + str(self.windowHeight) + "+" + str(windowX) + "+" + str(windowY))
+        self.window.grid_rowconfigure(0, weight=1)
+        self.window.grid_columnconfigure(0, weight=1)
     def createMainPage(self):
         """Create the frame and widgets for the main page"""
-        mainPage = tk.Frame(self.window)
-        title = tk.Label(mainPage, text="DS3 AutoSliders").pack()
-        importButton = tk.Button(mainPage, text="Import from file to game", command=lambda:self.pages["import"].tkraise()).pack()
-        exportButton = tk.Button(mainPage, text="Export from game to file", command=lambda:self.pages["export"].tkraise()).pack()
-        manualButton = tk.Button(mainPage, text="Create file manually", command=self.manualCommand).pack()
+        mainPage = ctk.CTkFrame(self.window, fg_color="transparent")
+        ctk.CTkLabel(mainPage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
+        ctk.CTkLabel(mainPage, text="DS3 AutoSliders", 
+                     fg_color="transparent", 
+                     font=self.bigFont).place(relx=.5,rely=.08, anchor="center")
+        ctk.CTkButton(mainPage, text="Import from file to game", 
+                      command=lambda:self.pages["import"].tkraise(), 
+                      **self.bigButtonAttributes).place(relx=.5,rely=.3, anchor="center")
+        ctk.CTkButton(mainPage, text="Export from game to file", 
+                      command=lambda:self.pages["export"].tkraise(), 
+                      **self.bigButtonAttributes).place(relx=.5,rely=.45, anchor="center")
+        ctk.CTkButton(mainPage, text="Create file manually", command=self.manualCommand, 
+                      **self.bigButtonAttributes).place(relx=.5,rely=.6, anchor="center")
         return mainPage
     def createImportPage(self):
         """Create the frame and widgets for the import page"""
-        importPage = tk.Frame(self.window)
-        tk.Label(importPage, text="Import page").pack() # page title
-        tk.Label(importPage, text="First, open a json file. Next you should click the \"start\" button " \
+        importPage = ctk.CTkFrame(self.window, fg_color="transparent")
+        ctk.CTkLabel(importPage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
+        ctk.CTkLabel(importPage, text="Import page", font=self.bigFont).place(relx=.5, rely=.08, anchor="center") # page title
+        ctk.CTkLabel(importPage, font=self.font, text="First, open a json file. Next you should click the \"start\" button " \
         "then quickly open up your game to the appearance menu of the character creation menu. Do not close the game or tab" \
-        " out until it is completed.", wraplength=500).pack() # instructions 
+        " out until it is completed.", wraplength=500).place(relx=.5, rely=.25, anchor="center") # instructions 
         self.importFilePath = None # initialize location where path of json will go
-        tk.Button(importPage, text="open json", command=self.openFile).pack() # open json button
-        self.importStartButton = tk.Button(importPage, text="start", command=self.importCommand, state="disabled")
-        self.importStartButton.pack()
-        tk.Button(importPage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise()).pack() # back button 
+        ctk.CTkButton(importPage, text="open json", command=self.openFile, 
+                      **self.bigButtonAttributes).place(relx=.5, rely=.5, anchor="center") # open json button
+        self.importStartButton = ctk.CTkButton(importPage, text="start", command=self.importCommand, 
+                                            state="disabled", 
+                                            **self.bigButtonAttributes)
+        self.importStartButton.place(relx=.5, rely=.65, anchor="center")
+        ctk.CTkButton(importPage, text=("Back to menu"), 
+                      command=lambda:self.pages["main"].tkraise(), 
+                      **self.bigButtonAttributes).place(relx=.5, rely=.8, anchor="center") # back button 
         return importPage
     def createExportPage(self):
         """Create the frame and widgets for the export page"""
-        exportPage = tk.Frame(self.window)
-        tk.Label(exportPage, text="Export page").pack() # page title
-        tk.Button(exportPage, text="choose where to save to", command=self.openExportSaveLocation).pack() # open file location button 
+        exportPage = ctk.CTkFrame(self.window, fg_color="transparent")
+        ctk.CTkLabel(exportPage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
+        ctk.CTkLabel(exportPage, text="Export page", font=self.bigFont).place(relx=.5, rely=.08, anchor="center") # page title
+        ctk.CTkButton(exportPage, text="choose where to save to", 
+                      command=self.openExportSaveLocation, 
+                      **self.bigButtonAttributes).place(relx=.5, rely=.3, anchor="center") # open file location button 
         self.exportFilePath = None
-        self.exportStartButton = tk.Button(exportPage, text="start", command=self.exportCommand, state="disabled")
-        self.exportStartButton.pack()
-        tk.Button(exportPage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise()).pack() # back button 
+        self.exportStartButton = ctk.CTkButton(exportPage, text="start", 
+                                               command=self.exportCommand, 
+                                               state="disabled", **self.bigButtonAttributes)
+        self.exportStartButton.place(relx=.5, rely=.45, anchor="center")
+        ctk.CTkButton(exportPage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise(), 
+                      **self.bigButtonAttributes).place(relx=.5, rely=.6, anchor="center") # back button 
         return exportPage
     def createManualPage(self):
         """Create the frame and widgets for the manual page"""
-        manualPage = tk.Frame(self.window)
-        self.manualPageTitle = tk.Label(manualPage, text="Manually Create JSON File")
-        self.manualPageTitle.grid(row=0,column=0,columnspan=2,pady=(0,5))
-        self.manualBackButton = tk.Button(manualPage, text="Back", command=self.backCommand)
-        self.manualBackButton.grid(row=2,column=0,columnspan=2) 
-        tk.Button(manualPage, text="Reset to menu", command=lambda:self.pages["main"].tkraise()).grid(row=3,column=0,columnspan=2) # back to menu button 
-        self.isLinked = tk.BooleanVar()
-        self.linkedCheckbox = tk.Checkbutton(manualPage, text="Link features", variable=self.isLinked, command=self.changeLinkedStatus)
-        self.linkedCheckbox.grid(row=2,column=0)
-        self.linkedCheckbox.grid_remove() # hidden by default 
-        self.manualSaveButton = tk.Button(manualPage, text="save", command=self.saveFile) 
-        self.manualSaveButton.grid(row=2,column=0, columnspan=2)
+        manualPage = ctk.CTkFrame(self.window, fg_color="transparent")
+        ctk.CTkLabel(manualPage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
+        self.manualPageTitle = ctk.CTkLabel(manualPage, text="PLACEHOLDER", font=self.bigFont)
+        self.manualPageTitle.place(relx=.5, rely=.08, anchor="center")
+        self.backSavePlacement = {"relx":.675, "rely":.85, "anchor":"center"} # need to save placement to remove and replace 
+        self.manualBackButton = ctk.CTkButton(manualPage, text="Back", command=self.backCommand, 
+                      **self.smallButtonAttributes)
+        self.manualBackButton.place(**self.backSavePlacement)
+        ctk.CTkButton(manualPage, text="Reset to menu", command=self.resetToMenu, 
+                      **self.smallButtonAttributes).place(relx=.325, rely=.85, anchor="center") # back to menu button 
+        self.isLinked = ctk.BooleanVar()
+        self.linkedCheckbox = ctk.CTkCheckBox(manualPage, text="Link features", variable=self.isLinked, command=self.changeLinkedStatus,
+                                              font = self.font, fg_color="#49473B", hover_color="#38362A")
+        self.linkedCheckboxPlacement = {"relx":.5, "rely":.925, "anchor":"center"} # need to save placement to remove and replace 
+        self.manualSaveButton = ctk.CTkButton(manualPage, text="Save", command=self.saveFile, 
+                      **self.smallButtonAttributes)
+        self.manualSaveButton.place(**self.backSavePlacement)
         return manualPage
     def createCompletePage(self):
         """Create the frame and widgets for the import/export complete page"""
-        completePage = tk.Frame(self.window)
-        self.completeLabel = tk.Label(completePage, text=("placeholder"))
+        completePage = ctk.CTkFrame(self.window, fg_color="transparent")
+        ctk.CTkLabel(completePage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
+        self.completeLabel = ctk.CTkLabel(completePage, text=("placeholder"))
         self.completeLabel.pack()
-        tk.Button(completePage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise()).pack() # back button
+        ctk.CTkButton(completePage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise()).pack() # back button
         return completePage
     def initButtons(self):
         """Initializes the widgets for the button pages"""
         self.numberButtons = 11
         self.manualButtons = [None] * self.numberButtons
         for i in range(self.numberButtons):
-            self.manualButtons[i] = tk.Button(self.manualButtonPane, text=f"button {i}")
+            self.manualButtons[i] = ctk.CTkButton(self.manualButtonPane, text=f"button {i}", 
+                      **self.buttonAttributes)
             self.manualButtons[i].grid(row=i,column=0)
     def openFile(self):
         """opens a file and sets the path to the field"""
         self.importFilePath = filedialog.askopenfilename(filetypes=[("AutoSlider file", "*.json")])
         if (self.importFilePath):
-            self.importStartButton.config(state="active")
+            self.importStartButton.configure(state="active")
         else:
-            self.importStartButton.config(state="disabled")
+            self.importStartButton.configure(state="disabled")
     def importCommand(self):
         """called by the start button on the import page - starts the import process then shows the complete page"""
-        importCharacter.importCharacter(self.importFilePath) # import character into game 
-        self.completeLabel.config(text="Your import is complete!")
+        isCompleted = importCharacter.importCharacter(self.importFilePath) # import character into game 
+        if not isCompleted:
+            return
+        self.completeLabel.configure(text="Your import is complete!")
         self.pages["complete"].tkraise()
     def validateEdit(self, P):
         """Validation command for text boxes. Limits from 0 to 255, but also allows the field to be cleared"""
@@ -172,21 +210,24 @@ class GUI:
         self.pages["manual"].tkraise() # display page
     def loadButtons(self):
         """Configures and displays the buttons for the current menu"""
-        titleText = spaceFormat(self.backMenuName[-1])
-        self.manualPageTitle.config(text=titleText)
+        self.manualBlankPane.tkraise() # hide things behind main button frame 
         if self.backMenuName[-1] == "main menu":
-            self.manualSaveButton.grid()
-            self.manualBackButton.grid_remove()
+            self.manualPageTitle.configure(text="General")
         else:
-            self.manualSaveButton.grid_remove()
-            self.manualBackButton.grid()
+            titleText = spaceFormat(self.backMenuName[-1])
+            self.manualPageTitle.configure(text=titleText)
+        if self.backMenuName[-1] == "main menu":
+            self.manualSaveButton.place(**self.backSavePlacement)
+            self.manualBackButton.place_forget()
+        else:
+            self.manualSaveButton.place_forget()
+            self.manualBackButton.place(**self.backSavePlacement)
 
         if "menu" in self.currentMenu: # if menu type page then handle accordingly 
             if self.currentMenu["menu"] == "sliders":
                 self.labels.load(self.currentMenu)
                 self.sliders.load(self.currentMenu)
             elif self.currentMenu["menu"] == "colors":
-                self.labels.load(self.currentMenu)
                 self.colors.load(self.currentMenu)
             elif self.currentMenu["menu"] == "tiles":
                 self.tiles.load(self.currentMenu)
@@ -199,23 +240,23 @@ class GUI:
         if "isLinked" in self.currentMenu: # handle linked menus
             isLinked = self.currentMenu["isLinked"] # load checkbox choice
             self.isLinked.set(isLinked) # set checkbox choice 
-            self.linkedCheckbox.grid() # display checkbox 
+            self.linkedCheckbox.place(**self.linkedCheckboxPlacement) # display checkbox 
             i=0
             for key in self.currentMenu:
                 if key == "isLinked": # dont display isLinked as button
                     continue
                 if isLinked: # configure button parameters for linked
                     if self.currentMenu[key]["linkType"] in ("linked", "all"):
-                        self.manualButtons[i].config(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                        self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
                         i += 1 # count number of buttons 
                 else: # configure correct buttons for unlinked
                     if self.currentMenu[key]["linkType"] in ("unlinked", "all"):
-                        self.manualButtons[i].config(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                        self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
                         i += 1 # count number of buttons 
         else: # if not a linked menu, then configure buttons 
             i = 0 
             for key in self.currentMenu: 
-                self.manualButtons[i].config(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
                 i += 1 # count number of buttons, and used 
 
         # used by both linked and non linked menus 
@@ -225,10 +266,10 @@ class GUI:
         for j in range(0,i): # display necessary buttons if not already displayed 
                 if not self.manualButtons[j].winfo_ismapped():
                     self.manualButtons[j].grid()
+        
         self.manualButtonPane.tkraise() # display button pane
-        self.manualBlankPane.tkraise() # display blank pane to hide anything on the left side such as text boxes  
     def clickButton(self, option): 
-        self.linkedCheckbox.grid_remove()
+        self.linkedCheckbox.place_forget()
         self.backDictionary.append(self.currentMenu)
         self.backMenuName.append(option)
         self.currentMenu = self.currentMenu[option]
@@ -240,10 +281,9 @@ class GUI:
             return 
         self.colors.shouldColorLog = False
         self.tiles.shouldTileLog = False
-        self.linkedCheckbox.grid_remove()
+        self.linkedCheckbox.place_forget()
         if "menu" in self.currentMenu:
-            if self.currentMenu["menu"] in ("sliders", "colors", "tiles"):
-                self.manualBlankPane.focus()
+            #self.manualBlankPane.focus()
             if self.currentMenu["menu"] == "sliders":
                 self.sliders.log(self.currentMenu)
                 
@@ -268,9 +308,16 @@ class GUI:
                                                 filetypes=[("JSON files", "*.json")], 
                                                 title="Save Character File")
         if (self.exportFilePath):
-            self.exportStartButton.config(state="active")
+            self.exportStartButton.configure(state="active")
         else:
-            self.exportStartButton.config(state="disabled")
+            self.exportStartButton.configure(state="disabled")
     def exportCommand(self):
         dict = exportCharacter.exportCharacter()
+        if not dict: # don't do anything if export wasn't carried out 
+            return
         mh.saveFile(self.exportFilePath, dict)
+    def resetToMenu(self):
+        self.pages["main"].tkraise()
+        self.backDictionary[1:] = []
+        self.backMenuName[1:] = []
+        self.currentMenu = self.dictionary
