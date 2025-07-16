@@ -168,9 +168,10 @@ class GUI:
         """Create the frame and widgets for the import/export complete page"""
         completePage = ctk.CTkFrame(self.window, fg_color="transparent")
         ctk.CTkLabel(completePage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
-        self.completeLabel = ctk.CTkLabel(completePage, text=("placeholder"))
-        self.completeLabel.pack()
-        ctk.CTkButton(completePage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise()).pack() # back button
+        self.completeLabel = ctk.CTkLabel(completePage, text=("placeholder"), font=self.bigFont)
+        self.completeLabel.place(relx=.5, rely=.25, anchor="center")
+        ctk.CTkButton(completePage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise(),
+                      **self.bigButtonAttributes).place(relx=.5, rely=.65, anchor="center") # back button
         return completePage
     def initButtons(self):
         """Initializes the widgets for the button pages"""
@@ -184,7 +185,7 @@ class GUI:
         """opens a file and sets the path to the field"""
         self.importFilePath = filedialog.askopenfilename(filetypes=[("AutoSlider file", "*.json")])
         if (self.importFilePath):
-            self.importStartButton.configure(state="active")
+            self.importStartButton.configure(state="normal")
         else:
             self.importStartButton.configure(state="disabled")
     def importCommand(self):
@@ -308,7 +309,7 @@ class GUI:
                                                 filetypes=[("JSON files", "*.json")], 
                                                 title="Save Character File")
         if (self.exportFilePath):
-            self.exportStartButton.configure(state="active")
+            self.exportStartButton.configure(state="normal")
         else:
             self.exportStartButton.configure(state="disabled")
     def exportCommand(self):
@@ -316,6 +317,8 @@ class GUI:
         if not dict: # don't do anything if export wasn't carried out 
             return
         mh.saveFile(self.exportFilePath, dict)
+        self.completeLabel.configure(text="Your export is complete!")
+        self.pages["complete"].tkraise()
     def resetToMenu(self):
         self.pages["main"].tkraise()
         self.backDictionary[1:] = []

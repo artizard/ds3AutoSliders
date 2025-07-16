@@ -176,7 +176,7 @@ class Tiles:
         self.manualTilesPane.grid_propagate(False)
         # initiate widgets 
         self.tileImage = ctk.CTkLabel(self.manualTilesPane, text="")
-        self.tileImage.place(x=0, y=0, relwidth=1, relheight=1)
+        self.tileImage.place(relx=.65, rely=.4, anchor="center")
 
         tileValidateCommand = self.manualTilesPane.register(self.validateTileEdit)
         self.tileValue = tk.StringVar()
@@ -186,7 +186,7 @@ class Tiles:
                                        from_=1, to=1, font=font, width=4, fg="white",
                                        relief="flat",
                                        bg="#49473B", buttonbackground="#38362A")
-        self.tileSelector.grid(row=0,column=0)
+        self.tileSelector.place(relx=.25,rely=.4, anchor="center")
 
         self.tileImages = {"isLoaded": False, "noneSelected": None, "hair":[None] * 24, "brow": [None] * 17, 
                            "beard":[None] * 12, "eyelashes":[None] * 4, "pupil": [None] * 9, "tattoo": [None] * 50}

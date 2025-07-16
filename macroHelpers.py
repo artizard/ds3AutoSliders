@@ -9,7 +9,6 @@ import re
 import colorsys
 import onnxruntime as ort
 import numpy as np
-import scipy.special
 from tkinter import messagebox
 
 # some things for import and export that need to be run before using. 
@@ -142,9 +141,8 @@ def checkIfGameIsOpen():
     resized.save("testOpenDetection.png") # DEBUG
 
     outputs = gameOpenModel.run(None, {gameOpenInput_name: imageArray})
-    logits = outputs[0]
-    prob = scipy.special.expit(logits)[0][0]
-
+    prob = outputs[0][0]
+    print(prob)
     if prob > .5:
         return True # correct menu open
     else:
@@ -178,10 +176,8 @@ def processRegion(x,y,x2,y2, isColor):
         logits = outputs[0]
         print("SLIDER")
 
-    probs = scipy.special.softmax(logits, axis=1)
-
-    answer = np.argmax(probs)
-    confidence = probs[0][answer]
+    answer = np.argmax(logits)
+    confidence = logits[0][answer]
     
     return answer, confidence
 def saveFile(filePath, dict):

@@ -115,13 +115,13 @@ def tileSet(menu):
     yOffset = abs(yOffset)
 
     for i in range(yOffset):
-        time.sleep(.1)
+        #time.sleep(.1)
         if isyOffsetNegative:
             pydirectinput.press('up')
         else:
             pydirectinput.press('down')
     for i in range(xOffset):
-        time.sleep(.1)
+        #time.sleep(.1)
         if isxOffsetNegative:
             pydirectinput.press('left')
         else:
