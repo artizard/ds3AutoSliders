@@ -52,7 +52,7 @@ def scrollDown(times):
     for i in range(times):
         down()
 def animDelay():
-    time.sleep(.5)
+    time.sleep(.35)
 def enterDelay():
     time.sleep(.3)
 def isSelected(x,y,desiredColor,tolerance):
@@ -169,15 +169,13 @@ def processRegion(x,y,x2,y2, isColor):
 
     if isColor:
         outputs = colorModel.run(None, {colorInput_name: imageArray})
-        logits = outputs[0]
-        print("COLOR")
+        probs = outputs[0]
     else:
         outputs = sliderModel.run(None, {sliderInput_name: imageArray})
-        logits = outputs[0]
-        print("SLIDER")
+        probs = outputs[0]
 
-    answer = np.argmax(logits)
-    confidence = logits[0][answer]
+    answer = np.argmax(probs[0])
+    confidence = probs[0][answer]
     
     return answer, confidence
 def saveFile(filePath, dict):
@@ -195,11 +193,11 @@ def saveFile(filePath, dict):
 def menuHasValues(menu):
     if "menu" in menu: # if page with values (not a buttons page)
         for i in menu:
-            if i not in ("menu", "options", "isLinked", "linkType", "numTiles", "folder") and menu[i] not in (-1, ""):
+            if i not in ("menu", "options", "colorsLinked", "linkType", "numTiles", "folder","tilesLinked") and menu[i] not in (-1, ""):
                 return True # value is set 
         return False # no values set
     for i in menu:
-        if i in "isLinked":
+        if i in ("colorsLinked","tilesLinked"):
             continue
         if menuHasValues(menu[i]):
             return True # value was found 
@@ -403,7 +401,7 @@ def getDictTemplate():
                 }
             },
             "hair/facialHair": {
-                "isLinked": True,
+                "colorsLinked": True,
                 "hair/brow/beard": {
                     MENU: COLORS,
                     LINKTYPE: "linked",
@@ -469,7 +467,8 @@ def getDictTemplate():
                 }
             },
             "pupils": {
-                "isLinked": True,
+                "tilesLinked": True,
+                "colorsLinked": True,
                 "pupils": {
                     MENU: TILES,
                     LINKTYPE: "linked",

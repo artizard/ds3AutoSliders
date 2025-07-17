@@ -16,6 +16,8 @@ def adjust(direction, isShift):
 def setVal(value, startNum, confidence):
     print("text :", startNum)
     print("confidence :", confidence)
+    """This is more or less old code, I've just kept it in case the model is unstable. Unfortunately this breaks the
+        body proportion menu as those sliders are linked."""
     if (confidence < .8):
         print("LOW CONFIDENCE - BACKUP METHOD USED")
         time.sleep(10)
@@ -23,7 +25,7 @@ def setVal(value, startNum, confidence):
         for i in range(26):
             adjust('left', True)
         startNum = 0
-    slideAmount = value - int(startNum)
+    slideAmount = value - int(startNum) # ensure it is an int 
     print("slideAmount :", slideAmount)
     if (slideAmount < 0):
         direction = 'left'
@@ -183,8 +185,11 @@ def importMacro(menu):
             case _:
                 print("invalid json error")
                 quit()
-    elif "isLinked" in menu: # linked button menu 
-        linkedImportMacro(menu, menu["isLinked"])
+    elif "tilesLinked" in menu: # linked menu with two linked aspects
+        doubleLinkedMacro(menu)
+        mh.back()
+    elif "colorsLinked" in menu: # single linked menu 
+        singleLinkedMacro(menu)
         mh.back()
     else: # non linked button menu 
         # recurse into next submenu 
@@ -197,22 +202,52 @@ def importMacro(menu):
             mh.down()
         mh.back()
             # down()
-def linkedImportMacro(menu, isLinked):
+def singleLinkedMacro(menu):
     """Helper method for importMacro() - processes the linked menus"""
+    colorsLinked = menu["colorsLinked"]
     for nextMenu in menu:
-        if nextMenu == "isLinked":
+        if nextMenu == "colorsLinked": # ignore this key as it does not represent a menu 
             continue
         if not mh.menuHasValues(menu[nextMenu]):
                 mh.down()
                 continue
-        elif isLinked:
+        elif colorsLinked:
             if menu[nextMenu]["linkType"] in ("all", "linked"):
                 mh.enter()
                 importMacro(menu[nextMenu]) # use base case to deal with 
-        elif not isLinked:
+        elif not colorsLinked:
             if menu[nextMenu]["linkType"] in ("all", "unlinked"):
                 mh.enter()
                 importMacro(menu[nextMenu]) # use base case to deal with 
+        mh.down()
+def doubleLinkedMacro(menu):
+    """Works simlarly to singleLinkedMacro(), however it has extra checks to accommodate two link types"""
+    tilesLinked = menu["tilesLinked"]
+    colorsLinked = menu["colorsLinked"]
+    for nextMenu in menu:
+        if nextMenu in ("tilesLinked","colorsLinked"): # ignore these keys as they do not represent menus 
+            continue
+        if not mh.menuHasValues(menu[nextMenu]):
+                mh.down()
+                continue
+        if menu[nextMenu]["menu"] == "tiles":
+            if tilesLinked:
+                if menu[nextMenu]["linkType"] in ("all", "linked"):
+                    mh.enter()
+                    importMacro(menu[nextMenu]) # use base case to deal with 
+            elif not tilesLinked:
+                if menu[nextMenu]["linkType"] in ("all", "unlinked"):
+                    mh.enter()
+                    importMacro(menu[nextMenu]) # use base case to deal with 
+        else: # colors menu
+            if colorsLinked:
+                if menu[nextMenu]["linkType"] in ("all", "linked"):
+                    mh.enter()
+                    importMacro(menu[nextMenu]) # use base case to deal with 
+            elif not colorsLinked:
+                if menu[nextMenu]["linkType"] in ("all", "unlinked"):
+                    mh.enter()
+                    importMacro(menu[nextMenu]) # use base case to deal with 
         mh.down()
 def importCharacter(jsonPath):
     with open(jsonPath) as f:

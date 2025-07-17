@@ -156,10 +156,21 @@ class GUI:
         self.manualBackButton.place(**self.backSavePlacement)
         ctk.CTkButton(manualPage, text="Reset to menu", command=self.resetToMenu, 
                       **self.smallButtonAttributes).place(relx=.325, rely=.85, anchor="center") # back to menu button 
-        self.isLinked = ctk.BooleanVar()
-        self.linkedCheckbox = ctk.CTkCheckBox(manualPage, text="Link features", variable=self.isLinked, command=self.changeLinkedStatus,
+        
+        self.areColorsLinked = ctk.BooleanVar()
+        self.colorsLinkedCheckbox = ctk.CTkCheckBox(manualPage, text="Link colors", variable=self.areColorsLinked, 
+                                                    command=lambda: self.changeLinkedStatus(True),
                                               font = self.font, fg_color="#49473B", hover_color="#38362A")
-        self.linkedCheckboxPlacement = {"relx":.5, "rely":.925, "anchor":"center"} # need to save placement to remove and replace 
+        self.colorsLinkedCheckboxPlacement = {"relx":.35, "rely":.925, "anchor":"center"} # need to save placement to remove and replace 
+
+        self.areTilesLinked = ctk.BooleanVar()
+        self.tilesLinkedCheckbox = ctk.CTkCheckBox(manualPage, text="Link pupilis", variable=self.areTilesLinked, 
+                                                   command=lambda: self.changeLinkedStatus(False),
+                                              font = self.font, fg_color="#49473B", hover_color="#38362A")
+        self.tilesLinkedCheckboxPlacement = {"relx":.65, "rely":.925, "anchor":"center"} # need to save placement to remove and replace 
+
+        self.singleLinkedCheckboxPlacement = {"relx":.5, "rely":.925, "anchor":"center"} # need to save placement to remove and replace 
+        
         self.manualSaveButton = ctk.CTkButton(manualPage, text="Save", command=self.saveFile, 
                       **self.smallButtonAttributes)
         self.manualSaveButton.place(**self.backSavePlacement)
@@ -238,22 +249,51 @@ class GUI:
         
         # if not menu type
 
-        if "isLinked" in self.currentMenu: # handle linked menus
-            isLinked = self.currentMenu["isLinked"] # load checkbox choice
-            self.isLinked.set(isLinked) # set checkbox choice 
-            self.linkedCheckbox.place(**self.linkedCheckboxPlacement) # display checkbox 
+        if "colorsLinked" in self.currentMenu: # handle linked menus
+            if "tilesLinked" in self.currentMenu: # handle additional checkbox if in double linked menu 
+                self.areTilesLinked.set(self.currentMenu["tilesLinked"]) # set checkbox choice to dictionary value 
+                self.tilesLinkedCheckbox.place(**self.tilesLinkedCheckboxPlacement) # display checkbox 
+                self.areColorsLinked.set(self.currentMenu["colorsLinked"]) # set checkbox choice to dictionary value
+                self.colorsLinkedCheckbox.place(**self.colorsLinkedCheckboxPlacement) # display checkbox 
+            else:
+                self.areColorsLinked.set(self.currentMenu["colorsLinked"]) # set checkbox choice to dictionary value
+                self.colorsLinkedCheckbox.place(**self.singleLinkedCheckboxPlacement) # display checkbox 
+            
+
             i=0
             for key in self.currentMenu:
-                if key == "isLinked": # dont display isLinked as button
+                if key in ("colorsLinked","tilesLinked"): # dont display booleans as buttons
                     continue
-                if isLinked: # configure button parameters for linked
-                    if self.currentMenu[key]["linkType"] in ("linked", "all"):
-                        self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
-                        i += 1 # count number of buttons 
-                else: # configure correct buttons for unlinked
-                    if self.currentMenu[key]["linkType"] in ("unlinked", "all"):
-                        self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
-                        i += 1 # count number of buttons 
+                if "tilesLinked" in self.currentMenu: # handle double menu
+                    if self.currentMenu[key]["menu"] == "tiles":
+                        if self.currentMenu["tilesLinked"]:
+                            if self.currentMenu[key]["linkType"] in ("linked", "all"):
+                                self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                                i += 1 # count number of buttons 
+                        else: # configure correct buttons for unlinked
+                            if self.currentMenu[key]["linkType"] in ("unlinked", "all"):
+                                self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                                i += 1 # count number of buttons 
+                        
+                    else: # colors menu
+                        if self.currentMenu["colorsLinked"]:
+                            if self.currentMenu[key]["linkType"] in ("linked", "all"):
+                                self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                                i += 1 # count number of buttons 
+                        else: # configure correct buttons for unlinked
+                            if self.currentMenu[key]["linkType"] in ("unlinked", "all"):
+                                self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                                i += 1 # count number of buttons 
+
+                else: # configure button parameters for single linked menu
+                    if self.currentMenu["colorsLinked"]: 
+                        if self.currentMenu[key]["linkType"] in ("linked", "all"):
+                            self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                            i += 1 # count number of buttons 
+                    else: # configure correct buttons for unlinked
+                        if self.currentMenu[key]["linkType"] in ("unlinked", "all"):
+                            self.manualButtons[i].configure(text=spaceFormat(key), command=lambda o=key:self.clickButton(o))
+                            i += 1 # count number of buttons 
         else: # if not a linked menu, then configure buttons 
             i = 0 
             for key in self.currentMenu: 
@@ -270,7 +310,8 @@ class GUI:
         
         self.manualButtonPane.tkraise() # display button pane
     def clickButton(self, option): 
-        self.linkedCheckbox.place_forget()
+        self.colorsLinkedCheckbox.place_forget()
+        self.tilesLinkedCheckbox.place_forget()
         self.backDictionary.append(self.currentMenu)
         self.backMenuName.append(option)
         self.currentMenu = self.currentMenu[option]
@@ -282,7 +323,8 @@ class GUI:
             return 
         self.colors.shouldColorLog = False
         self.tiles.shouldTileLog = False
-        self.linkedCheckbox.place_forget()
+        self.colorsLinkedCheckbox.place_forget()
+        self.tilesLinkedCheckbox.place_forget()
         if "menu" in self.currentMenu:
             #self.manualBlankPane.focus()
             if self.currentMenu["menu"] == "sliders":
@@ -292,9 +334,12 @@ class GUI:
         self.backMenuName.pop()
         self.backDictionary.pop()
         self.loadButtons()
-    def changeLinkedStatus(self):
+    def changeLinkedStatus(self, isColor):
         """Logs the current linked status into the dictionary, and loads the corresponding buttons"""
-        self.currentMenu["isLinked"] = self.isLinked.get()
+        if isColor:
+            self.currentMenu["colorsLinked"] = self.areColorsLinked.get()
+        else:
+            self.currentMenu["tilesLinked"] = self.areTilesLinked.get()
         self.loadButtons()
     def saveFile(self): 
         savePath = filedialog.asksaveasfilename(defaultextension=".json", 

@@ -88,9 +88,13 @@ def exportMacro(menu):
             case _:
                 print("invalid json error")
                 quit()
-    elif "isLinked" in menu: # linked button menu 
-        linkedExportMacro(menu, menu["isLinked"])
+    elif "tilesLinked" in menu: # linked menu with two linked aspects
+        doubleLinkedMacro(menu)
         mh.back()
+    elif "colorsLinked" in menu: # single linked menu 
+        singleLinkedMacro(menu)
+        mh.back()
+
     else: # non linked button menu 
         # recurse into next submenu 
         for nextMenu in menu:
@@ -99,20 +103,71 @@ def exportMacro(menu):
             mh.down()
         mh.back()
             # down()
-def linkedExportMacro(menu, isLinked): 
-    """Helper method for exportMacro() - processes the linked menus"""
-    for nextMenu in menu:
-        if nextMenu == "isLinked":
+def singleLinkedMacro(menu): 
+    """ Helper method for exportMacro() - processes the linked menus that has only one linked aspect (hair). 
+        Reads all values from the page,then decides whether the menu is linked or not depending on whether 
+        linked values differ. This means that unecessary values will be read, however the boolean colorsLinked 
+        will prevent them from having an impact, so I think it's a worthwhile tradeoff for simplicity's sake."""
+    for nextMenu in menu: # read in all values 
+        if nextMenu == "colorsLinked": # ignore key as it does not represent a menu 
             continue
-        elif isLinked:
-            if menu[nextMenu]["linkType"] in ("all", "linked"):
-                mh.enter()
-                exportMacro(menu[nextMenu]) # use base case to deal with 
-        elif not isLinked:
-            if menu[nextMenu]["linkType"] in ("all", "unlinked"):
-                mh.enter()
-                exportMacro(menu[nextMenu]) # use base case to deal with 
+        mh.enter()
+        exportMacro(menu[nextMenu]) # handle menu with normal export handling 
         mh.down()
+    
+    # decide value of "colorsLinked"
+    linkedValue = None 
+    colorsLinked = True # starts as true, will change if not 
+    for key in menu: # go through all menus 
+        if key == "colorsLinked": # ignore key as it does not represent a menu 
+            continue
+        # check the unlinked menus only, and if any differ from one another, then it is unlinked. If all are the same, then 
+        # it is okay to label this whole menu as linked. 
+        if menu[key]["linkType"] == "unlinked": 
+            if linkedValue is None: # no value to compare to 
+                linkedValue = (menu[key]["red"], menu[key]["green"], menu[key]["blue"])
+            else:
+                currentValue = (menu[key]["red"], menu[key]["green"], menu[key]["blue"])
+                if currentValue != linkedValue:
+                    colorsLinked = False
+                    break
+    menu["colorsLinked"] = colorsLinked # set value in dictionary 
+def doubleLinkedMacro(menu):
+    """Works simlarly to singleLinkedMacro(), however it has extra checks to accommodate two link types"""
+    for nextMenu in menu: # read in all values 
+        if nextMenu in ("tilesLinked","colorsLinked"): # ignore these keys as they do not represent menus 
+            continue
+        mh.enter()
+        exportMacro(menu[nextMenu]) # handle menu with normal export handling 
+        mh.down()
+    
+    colorsValue = None 
+    tilesValue = None
+    tilesLinked = True
+    colorsLinked = True
+    for key in menu: # go through all menus 
+        if key in ("tilesLinked","colorsLinked"): # ignore these keys as they do not represent menus 
+            continue
+        # check the unlinked menus only, and if any differ from one another, then it is unlinked. If all are the same, then 
+        # it is okay to label this whole menu as linked. 
+        if menu[key]["menu"] == "tiles":
+            if menu[key]["linkType"] == "unlinked": 
+                if tilesValue is None: # no value to compare to 
+                    tilesValue = menu[key]["value"]
+                else:
+                    currentValue = menu[key]["value"]
+                    if currentValue != tilesValue:
+                        tilesLinked = False
+        else: # colors menu 
+            if menu[key]["linkType"] == "unlinked": 
+                if colorsValue is None: # no value to compare to 
+                    colorsValue = (menu[key]["red"], menu[key]["green"], menu[key]["blue"])
+                else:
+                    currentValue = (menu[key]["red"], menu[key]["green"], menu[key]["blue"])
+                    if currentValue != colorsValue:
+                        colorsLinked = False
+    menu["tilesLinked"] = tilesLinked
+    menu["colorsLinked"] = colorsLinked
 def exportCharacter():
     dict = mh.getDictTemplate()
     openedCorrectly = mh.loadOCR()
