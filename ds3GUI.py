@@ -27,6 +27,7 @@ class GUI:
         self.initWindowSize()
         
         self.font = ("OptimusPrincepsSemiBold",int(self.screenHeight/70),"normal")
+        self.instructionsFont = ("OptimusPrinceps",int(self.screenHeight/70),"normal")
         self.bigFont = ("OptimusPrincepsSemiBold",int(self.screenHeight/35),"normal")
         self.smallButtonAttributes = {"fg_color":"#49473B","corner_radius":self.screenHeight/100, 
                                  "hover_color":"#38362A","font":self.font, "width":self.screenHeight/7, 
@@ -113,10 +114,11 @@ class GUI:
         """Create the frame and widgets for the import page"""
         importPage = ctk.CTkFrame(self.window, fg_color="transparent")
         ctk.CTkLabel(importPage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
-        ctk.CTkLabel(importPage, text="Import page", font=self.bigFont).place(relx=.5, rely=.08, anchor="center") # page title
-        ctk.CTkLabel(importPage, font=self.font, text="First, open a json file. Next you should click the \"start\" button " \
-        "then quickly open up your game to the appearance menu of the character creation menu. Do not close the game or tab" \
-        " out until it is completed.", wraplength=500).place(relx=.5, rely=.25, anchor="center") # instructions 
+        ctk.CTkLabel(importPage, text="Import Character", font=self.bigFont).place(relx=.5, rely=.08, anchor="center") # page title
+        ctk.CTkLabel(importPage, font=self.instructionsFont, text="First, open your character file. Next, click the \"start\" button " \
+        "then quickly open up your game to the appearance menu of the character creation menu. The import will start after a few seconds. " \
+        "Leave the game open and do not move your mouse until the menus stop changing.", 
+        wraplength=int(self.windowWidth*.9)).place(relx=.5, rely=.25, anchor="center") # instructions 
         self.importFilePath = None # initialize location where path of json will go
         ctk.CTkButton(importPage, text="open json", command=self.openFile, 
                       **self.bigButtonAttributes).place(relx=.5, rely=.5, anchor="center") # open json button
@@ -124,7 +126,7 @@ class GUI:
                                             state="disabled", 
                                             **self.bigButtonAttributes)
         self.importStartButton.place(relx=.5, rely=.65, anchor="center")
-        ctk.CTkButton(importPage, text=("Back to menu"), 
+        ctk.CTkButton(importPage, text=("back to menu"), 
                       command=lambda:self.pages["main"].tkraise(), 
                       **self.bigButtonAttributes).place(relx=.5, rely=.8, anchor="center") # back button 
         return importPage
@@ -132,17 +134,20 @@ class GUI:
         """Create the frame and widgets for the export page"""
         exportPage = ctk.CTkFrame(self.window, fg_color="transparent")
         ctk.CTkLabel(exportPage, text="", image=self.background).place(x=0, y=0, relwidth=1, relheight=1)
-        ctk.CTkLabel(exportPage, text="Export page", font=self.bigFont).place(relx=.5, rely=.08, anchor="center") # page title
-        ctk.CTkButton(exportPage, text="choose where to save to", 
+        ctk.CTkLabel(exportPage, text="Export From Game", font=self.bigFont).place(relx=.5, rely=.08, anchor="center") # page title
+        ctk.CTkLabel(exportPage, font=self.instructionsFont, text="First, choose the desired filename and location. Next, click the \"start\" button " \
+        "then quickly open up your game to the appearance menu of the character creation menu. The export will start after a few seconds. " \
+        "Leave the game open and do not move your mouse until the menus stop changing.", wraplength=500).place(relx=.5, rely=.25, anchor="center") # instructions 
+        ctk.CTkButton(exportPage, text="choose save location", 
                       command=self.openExportSaveLocation, 
-                      **self.bigButtonAttributes).place(relx=.5, rely=.3, anchor="center") # open file location button 
+                      **self.bigButtonAttributes).place(relx=.5, rely=.5, anchor="center") # open file location button 
         self.exportFilePath = None
         self.exportStartButton = ctk.CTkButton(exportPage, text="start", 
                                                command=self.exportCommand, 
                                                state="disabled", **self.bigButtonAttributes)
-        self.exportStartButton.place(relx=.5, rely=.45, anchor="center")
-        ctk.CTkButton(exportPage, text=("Back to menu"), command=lambda:self.pages["main"].tkraise(), 
-                      **self.bigButtonAttributes).place(relx=.5, rely=.6, anchor="center") # back button 
+        self.exportStartButton.place(relx=.5, rely=.65, anchor="center")
+        ctk.CTkButton(exportPage, text=("back to menu"), command=lambda:self.pages["main"].tkraise(), 
+                      **self.bigButtonAttributes).place(relx=.5, rely=.8, anchor="center") # back button 
         return exportPage
     def createManualPage(self):
         """Create the frame and widgets for the manual page"""
