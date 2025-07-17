@@ -87,8 +87,8 @@ class GUI:
         """"Sets the scale and position of the window"""
         self.screenWidth = self.window.winfo_screenwidth()
         self.screenHeight = self.window.winfo_screenheight()
-        self.windowWidth = self.screenHeight // (1.5 * 1.5)
-        self.windowHeight = int(self.screenHeight / (1.3886 * 1.5))
+        self.windowWidth = self.screenHeight // (1.082 * 1.75) # 1.082 to match aspect ratio of background image 
+        self.windowHeight = int(self.screenHeight / (1 * 1.75)) # second number to scale size on screen 
         windowX = self.screenWidth // 2
         windowY = self.screenHeight // 3
         self.window.geometry(str(self.windowWidth) + "x" + str(self.windowHeight) + "+" + str(windowX) + "+" + str(windowY))
@@ -137,7 +137,8 @@ class GUI:
         ctk.CTkLabel(exportPage, text="Export From Game", font=self.bigFont).place(relx=.5, rely=.08, anchor="center") # page title
         ctk.CTkLabel(exportPage, font=self.instructionsFont, text="First, choose the desired filename and location. Next, click the \"start\" button " \
         "then quickly open up your game to the appearance menu of the character creation menu. The export will start after a few seconds. " \
-        "Leave the game open and do not move your mouse until the menus stop changing.", wraplength=500).place(relx=.5, rely=.25, anchor="center") # instructions 
+        "Leave the game open and do not move your mouse until the menus stop changing.", 
+        wraplength=int(self.windowWidth*.9)).place(relx=.5, rely=.25, anchor="center") # instructions 
         ctk.CTkButton(exportPage, text="choose save location", 
                       command=self.openExportSaveLocation, 
                       **self.bigButtonAttributes).place(relx=.5, rely=.5, anchor="center") # open file location button 
