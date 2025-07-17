@@ -26,18 +26,18 @@ class GUI:
     
         self.initWindowSize()
         
-        self.font = ("OptimusPrincepsSemiBold",int(self.screenHeight/70),"normal")
-        self.instructionsFont = ("OptimusPrinceps",int(self.screenHeight/70),"normal")
-        self.bigFont = ("OptimusPrincepsSemiBold",int(self.screenHeight/35),"normal")
-        self.smallButtonAttributes = {"fg_color":"#49473B","corner_radius":self.screenHeight/100, 
-                                 "hover_color":"#38362A","font":self.font, "width":self.screenHeight/7, 
-                                 "height":self.screenHeight/35}
-        self.buttonAttributes = {"fg_color":"#49473B","corner_radius":self.screenHeight/100, 
-                                 "hover_color":"#38362A","font":self.font, "width":self.screenHeight/5, 
-                                 "height":self.screenHeight/35}
-        self.bigButtonAttributes = {"fg_color":"#49473B","corner_radius":self.screenHeight/100, 
-                                 "hover_color":"#38362A","font":("OptimusPrincepsSemiBold",self.screenHeight/60,"normal"), 
-                                 "width":self.screenHeight/4, "height":self.screenHeight/18}
+        self.font = ("OptimusPrincepsSemiBold",int(self.windowHeight/34),"normal")
+        self.instructionsFont = ("OptimusPrinceps",int(self.windowHeight/34),"normal")
+        self.bigFont = ("OptimusPrincepsSemiBold",int(self.windowHeight/17),"normal")
+        self.smallButtonAttributes = {"fg_color":"#49473B","corner_radius":self.windowHeight/48, 
+                                 "hover_color":"#38362A","font":self.font, "width":self.windowHeight/3.36, 
+                                 "height":self.windowHeight/16.8} 
+        self.buttonAttributes = {"fg_color":"#49473B","corner_radius":self.windowHeight/48, 
+                                 "hover_color":"#38362A","font":self.font, "width":self.windowHeight/2.4, 
+                                 "height":self.windowHeight/16.8}
+        self.bigButtonAttributes = {"fg_color":"#49473B","corner_radius":self.windowHeight/48, 
+                                 "hover_color":"#38362A","font":("OptimusPrincepsSemiBold",self.windowHeight/28,"normal"), 
+                                 "width":self.windowHeight/1.92, "height":self.windowHeight/8.64}
         self.paneWidth = int(self.windowWidth / 1.11)
         self.paneHeight = int(self.windowHeight / 1.5)
         self.dictionary = mh.getDictTemplate()
