@@ -46,11 +46,10 @@ class GUI:
 
         """Represents not only the structure of the menus, but the values for the sliders, dropdowns, etc."""
         self.dictionary = self.templateDict.copy()
-        """keeps track of the previous menus you were in so you can use the back button"""
-        self.backDictionary = [self.dictionary]
-        """keeps track of the key names of the different menus so you can traverse backwards and still know
-        the name of the parent key. """
-        self.backMenuName = ["main menu"] 
+
+        """keeps track of the key names of the different menus so you can traverse backwards as well as know the
+            name of the parent key."""
+        self.backKeys = [] 
         """keeps track of the current menu"""
         self.currentMenu = self.dictionary
 
@@ -243,21 +242,20 @@ class GUI:
             self.pages["main"].tkraise()
         else: 
             self.dictionary = mh.loadJSON(filePath) 
-        
     def loadButtons(self):
         """Configures and displays the buttons for the current menu"""
         self.manualBlankPane.tkraise() # hide things behind main button frame 
-        if self.backMenuName[-1] == "main menu":
+        # if self.backKeys[-1] == "main menu":
+        #     self.manualPageTitle.configure(text="General")
+        if len(self.backKeys) == 0:
             self.manualPageTitle.configure(text="General")
-        else:
-            titleText = spaceFormat(self.backMenuName[-1])
-            self.manualPageTitle.configure(text=titleText)
-        if self.backMenuName[-1] == "main menu":
             self.manualSaveButton.place(**self.backSavePlacement)
             self.manualBackButton.place_forget()
         else:
             self.manualSaveButton.place_forget()
             self.manualBackButton.place(**self.backSavePlacement)
+            titleText = spaceFormat(self.backKeys[-1])
+            self.manualPageTitle.configure(text=titleText)
 
         if "menu" in self.currentMenu: # if menu type page then handle accordingly 
             if self.currentMenu["menu"] == "sliders":
@@ -336,13 +334,11 @@ class GUI:
     def clickButton(self, option): 
         self.colorsLinkedCheckbox.place_forget()
         self.tilesLinkedCheckbox.place_forget()
-        self.backDictionary.append(self.currentMenu)
-        self.backMenuName.append(option)
+        self.backKeys.append(option)
         self.currentMenu = self.currentMenu[option]
-        self.lastKey = option
         self.loadButtons()
     def backCommand(self):
-        if (len(self.backDictionary) <= 1):
+        if (len(self.backKeys) == 0):
             print("can't go back any more")
             return 
         self.colors.shouldColorLog = False
@@ -353,10 +349,8 @@ class GUI:
             #self.manualBlankPane.focus()
             if self.currentMenu["menu"] == "sliders":
                 self.sliders.log(self.currentMenu)
-                
-        self.currentMenu = self.backDictionary[len(self.backDictionary)-1]
-        self.backMenuName.pop()
-        self.backDictionary.pop()
+        self.currentMenu = self.findBackMenu()
+        self.backKeys.pop()
         self.loadButtons()
     def changeLinkedStatus(self, isColor):
         """Logs the current linked status into the dictionary, and loads the corresponding buttons"""
@@ -390,7 +384,10 @@ class GUI:
         self.pages["complete"].tkraise()
     def resetToMenu(self):
         self.pages["main"].tkraise()
-        self.backDictionary[1:] = []
-        self.backMenuName[1:] = []
+        self.backKeys = []
         self.currentMenu = self.dictionary
- 
+    def findBackMenu(self):
+        menu = self.dictionary
+        for i in self.backKeys[:-1]:
+            menu = menu[i]
+        return menu
