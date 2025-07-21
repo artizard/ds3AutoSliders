@@ -214,7 +214,7 @@ class GUI:
         """called by the start button on the import page - starts the import process then shows the complete page"""
         isCompleted = importCharacter.importCharacter(self.importFilePath) # import character into game 
         if not isCompleted:
-            return
+            return # import was not successful so do not show completion screen 
         self.completeLabel.configure(text="Your import is complete!")
         self.pages["complete"].tkraise()
     def validateEdit(self, P):
@@ -242,6 +242,8 @@ class GUI:
             self.pages["main"].tkraise()
         else: 
             self.dictionary = mh.loadJSON(filePath) 
+            if self.dictionary is None:
+                self.pages["main"].tkraise()
     def loadButtons(self):
         """Configures and displays the buttons for the current menu"""
         self.manualBlankPane.tkraise() # hide things behind main button frame 

@@ -240,7 +240,14 @@ def currentTileOnPage():
     return currentTileOnPage()
 def notOpenedMessage():
     messagebox.showwarning("ERROR", "The game was either not opened, or was opened to the wrong menu.")
+def invalidJsonMessage():
+    messagebox.showwarning("ERROR", "The file you chose is invalid. This is likely due to it not being a json file, or it having invalid json syntax.")
 def loadJSON(path):
-    with open(path) as f:
-        data = json.load(f)
-    return data
+    try:
+        with open(path) as f:
+            data = json.load(f)
+        return data
+    except:
+        invalidJsonMessage()
+        return None
+    
