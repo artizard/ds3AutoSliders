@@ -40,8 +40,12 @@ class GUI:
                                  "width":self.windowHeight/1.92, "height":self.windowHeight/8.64}
         self.paneWidth = int(self.windowWidth / 1.11)
         self.paneHeight = int(self.windowHeight / 1.5)
-        self.dictionary = mh.getDictTemplate()
 
+        """Kept so that self.dictionary can be reset to default template values"""
+        self.templateDict = mh.loadJSON("template.json")
+
+        """Represents not only the structure of the menus, but the values for the sliders, dropdowns, etc."""
+        self.dictionary = self.templateDict.copy()
         """keeps track of the previous menus you were in so you can use the back button"""
         self.backDictionary = [self.dictionary]
         """keeps track of the key names of the different menus so you can traverse backwards and still know
@@ -109,6 +113,8 @@ class GUI:
                       **self.bigButtonAttributes).place(relx=.5,rely=.45, anchor="center")
         ctk.CTkButton(mainPage, text="Create file manually", command=self.manualCommand, 
                       **self.bigButtonAttributes).place(relx=.5,rely=.6, anchor="center")
+        ctk.CTkButton(mainPage, text="Edit File", command=self.editCommand, 
+                      **self.bigButtonAttributes).place(relx=.5,rely=.75, anchor="center")
         return mainPage
     def createImportPage(self):
         """Create the frame and widgets for the import page"""
@@ -120,7 +126,7 @@ class GUI:
         "Leave the game open and do not move your mouse until the menus stop changing.", 
         wraplength=int(self.windowWidth*.9)).place(relx=.5, rely=.25, anchor="center") # instructions 
         self.importFilePath = None # initialize location where path of json will go
-        ctk.CTkButton(importPage, text="open json", command=self.openFile, 
+        ctk.CTkButton(importPage, text="open json", command=self.openImportFile, 
                       **self.bigButtonAttributes).place(relx=.5, rely=.5, anchor="center") # open json button
         self.importStartButton = ctk.CTkButton(importPage, text="start", command=self.importCommand, 
                                             state="disabled", 
@@ -198,9 +204,9 @@ class GUI:
             self.manualButtons[i] = ctk.CTkButton(self.manualButtonPane, text=f"button {i}", 
                       **self.buttonAttributes)
             self.manualButtons[i].grid(row=i,column=0)
-    def openFile(self):
-        """opens a file and sets the path to the field"""
-        self.importFilePath = filedialog.askopenfilename(filetypes=[("AutoSlider file", "*.json")])
+    def openImportFile(self):
+        """opens a file and sets the path to the import file field"""
+        self.importFilePath = filedialog.askopenfilename(filetypes=[("AutoSlider file", "*.json")], title="Select the file you wish to import")
         if (self.importFilePath):
             self.importStartButton.configure(state="normal")
         else:
@@ -224,8 +230,20 @@ class GUI:
         return False
     def manualCommand(self):
         """Switches to the manual character creation menu"""
+        self.dictionary.update(self.templateDict) # resets dictionary 
         self.loadButtons() # load first buttons 
         self.pages["manual"].tkraise() # display page
+    def editCommand(self):
+        """Switches to the edit character file"""
+        self.loadButtons() # load first buttons 
+        self.pages["manual"].tkraise() # display page
+        self.window.update() # avoids visualing artifacting from filedialog popping up before window is redrawn for tkraise 
+        filePath = filedialog.askopenfilename(filetypes=[("AutoSlider file", "*.json")], title="Select the file you wish to edit")
+        if not filePath:
+            self.pages["main"].tkraise()
+        else: 
+            self.dictionary = mh.loadJSON(filePath) 
+        
     def loadButtons(self):
         """Configures and displays the buttons for the current menu"""
         self.manualBlankPane.tkraise() # hide things behind main button frame 
@@ -375,3 +393,4 @@ class GUI:
         self.backDictionary[1:] = []
         self.backMenuName[1:] = []
         self.currentMenu = self.dictionary
+ 
