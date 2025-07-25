@@ -249,10 +249,9 @@ def doubleLinkedMacro(menu):
                     mh.enter()
                     importMacro(menu[nextMenu]) # use base case to deal with 
         mh.down()
-def importCharacter(jsonPath):
-    data = mh.loadJSON(jsonPath)
+def importCharacter(jsonPath, data):
     openedCorrectly = mh.loadOCR()
-    if not openedCorrectly or data is None:
+    if not openedCorrectly:
         return False
     # reset position
     mh.back()

@@ -250,4 +250,14 @@ def loadJSON(path):
     except:
         invalidJsonMessage()
         return None
-    
+def isDictValid(reference, dictionary):
+    if not isinstance(reference, dict) or not isinstance(dictionary, dict):
+        return True # exit out since you can't recurse further into this path 
+    if reference.keys() != dictionary.keys():
+        return False
+    for i in reference:
+        if i in ("colorsLinked","tilesLinked"):
+            continue
+        if not isDictValid(reference[i], dictionary[i]):
+            return False # value was found 
+    return True

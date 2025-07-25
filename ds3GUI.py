@@ -212,6 +212,12 @@ class GUI:
             self.importStartButton.configure(state="disabled")
     def importCommand(self):
         """called by the start button on the import page - starts the import process then shows the complete page"""
+        data = mh.loadJSON(self.importFilePath)
+        if data is None:
+            return
+        if not mh.isDictValid(self.templateDict, data):
+            mh.invalidJsonMessage()
+            return
         isCompleted = importCharacter.importCharacter(self.importFilePath) # import character into game 
         if not isCompleted:
             return # import was not successful so do not show completion screen 
@@ -238,12 +244,17 @@ class GUI:
         self.pages["manual"].tkraise() # display page
         self.window.update() # avoids visualing artifacting from filedialog popping up before window is redrawn for tkraise 
         filePath = filedialog.askopenfilename(filetypes=[("AutoSlider file", "*.json")], title="Select the file you wish to edit")
-        if not filePath:
+        if not filePath: # go back to main menu if user exits out of file dialog 
             self.pages["main"].tkraise()
-        else: 
-            self.dictionary = mh.loadJSON(filePath) 
-            if self.dictionary is None:
-                self.pages["main"].tkraise()
+            return
+        dictionary = mh.loadJSON(filePath) # load as json to be able to check the validity 
+        if not dictionary:
+            self.pages["main"].tkraise()
+        elif not mh.isDictValid(self.templateDict, dictionary): # check validity 
+            self.pages["main"].tkraise() 
+            mh.invalidJsonMessage()
+        else: # assign to the main dictionary 
+            self.dictionary = dictionary
     def loadButtons(self):
         """Configures and displays the buttons for the current menu"""
         self.manualBlankPane.tkraise() # hide things behind main button frame 
