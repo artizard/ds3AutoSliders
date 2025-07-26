@@ -2,6 +2,7 @@ import time
 import pydirectinput
 import json
 import macroHelpers as mh
+import random
 
 def adjust(direction, isShift):
     """
@@ -43,14 +44,35 @@ def colorSliders(r,g,b):
     mh.up()
     text,confidence = mh.processRegion(.494,.784,.521,.807, True)
     setVal(b,text,confidence)
+    while True: # second check to ensure it worked as expected 
+            text, confidence = mh.processRegion(.494,.784,.521,.807, True)
+            if text != b:
+                print("ERROR")
+                setVal(b,text,confidence)
+            else:
+                break
     mh.up()
+
     text,confidence = mh.processRegion(.494,.738,.521,.761, True)
     setVal(g,text,confidence)
+    while True: # second check to ensure it worked as expected 
+            text, confidence = mh.processRegion(.494,.738,.521,.761, True)
+            if text != g:
+                print("ERROR")
+                setVal(g,text,confidence)
+            else:
+                break
     mh.up()
     
     text,confidence = mh.processRegion(.494,.691,.521,.715, True)
     setVal(r,text,confidence)
-    mh.enter()
+    while True: # second check to ensure it worked as expected 
+            text, confidence = mh.processRegion(.494,.691,.521,.715, True)
+            if text != r:
+                print("ERROR")
+                setVal(r,text,confidence)
+            else:
+                break
 def twoBoxes(option):
     """value 1 is the first box, 2 is second """
     time.sleep(.07)
@@ -128,8 +150,8 @@ def tileSet(menu):
             pydirectinput.press('left')
         else:
             pydirectinput.press('right')
-
-    mh.enter()
+    if mh.findSelectedTile(menu) - 1 != value:
+        tileSet(menu)
 def dropdownMenu(menu):
     if menu["options"][0] == "male":
         isGender = True # the gender menu in particular has an animation delay, so we
@@ -164,11 +186,13 @@ def sliderMenu(menu):
 def colorMenu(menu):
     colorValues = [menu["red"],menu["green"],menu["blue"]]
     colorSliders(*colorValues)
+    mh.enter()
 def tileMenu(menu):
     if menu["value"] == -1:
         mh.back()
         return
     tileSet(menu)
+    mh.enter()
 def importMacro(menu):
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()
@@ -264,6 +288,13 @@ def setSliders(values):
         if values[i] != -1: # ignore if user didn't set a value in json
             text,confidence = mh.processRegion(*mh.sliderRegions[i], False)
             setVal(values[i],text,confidence)
+            while True: # second check to ensure it worked as expected 
+                text, confidence = mh.processRegion(*mh.sliderRegions[i], False)
+                if text != values[i]:
+                    print("ERROR")
+                    setVal(values[i],text,confidence)
+                else:
+                    break
         mh.down() # go down regardless 
     mh.enter()
     mh.back()

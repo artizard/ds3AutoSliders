@@ -218,7 +218,7 @@ class GUI:
         if not mh.isDictValid(self.templateDict, data):
             mh.invalidJsonMessage()
             return
-        isCompleted = importCharacter.importCharacter(self.importFilePath) # import character into game 
+        isCompleted = importCharacter.importCharacter(self.importFilePath, data) # import character into game 
         if not isCompleted:
             return # import was not successful so do not show completion screen 
         self.completeLabel.configure(text="Your import is complete!")
@@ -240,7 +240,7 @@ class GUI:
         self.pages["manual"].tkraise() # display page
     def editCommand(self):
         """Switches to the edit character file"""
-        self.loadButtons() # load first buttons 
+        self.loadButtons() # load first buttons for decorative purposes 
         self.pages["manual"].tkraise() # display page
         self.window.update() # avoids visualing artifacting from filedialog popping up before window is redrawn for tkraise 
         filePath = filedialog.askopenfilename(filetypes=[("AutoSlider file", "*.json")], title="Select the file you wish to edit")
@@ -255,6 +255,7 @@ class GUI:
             mh.invalidJsonMessage()
         else: # assign to the main dictionary 
             self.dictionary = dictionary
+            self.currentMenu = self.dictionary # create proper references 
     def loadButtons(self):
         """Configures and displays the buttons for the current menu"""
         self.manualBlankPane.tkraise() # hide things behind main button frame 

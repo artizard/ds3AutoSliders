@@ -52,7 +52,7 @@ def scrollDown(times):
     for i in range(times):
         down()
 def animDelay():
-    time.sleep(.35)
+    time.sleep(.25) #.2 might be fine?
 def enterDelay():
     time.sleep(.3)
 def isSelected(x,y,desiredColor,tolerance):

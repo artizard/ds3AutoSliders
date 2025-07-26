@@ -116,7 +116,6 @@ class Colors:
         else:
             colorValue = -1
         self.currentMenu[color] = colorValue
-
         hexCode = self.dictColorToHex()
         self.manualColorDisplay.configure(fg_color=hexCode)
 class Labels:
