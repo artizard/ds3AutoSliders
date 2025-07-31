@@ -23,6 +23,7 @@ class GUI:
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")
         self.window.configure(fg_color="#0D0D0F")
+        self.window.iconbitmap("images/ui/icon.ico")
     
         self.initWindowSize()
         
