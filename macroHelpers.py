@@ -242,6 +242,10 @@ def notOpenedMessage():
     messagebox.showwarning("ERROR", "The game was either not opened, or was opened to the wrong menu.")
 def invalidJsonMessage():
     messagebox.showwarning("ERROR", "The file you chose is invalid. This is likely due to it not being a json file, or it having invalid json syntax.")
+def gameClosedMesage():
+    messagebox.showwarning("ERROR", "The game was closed or tabbed out of during the process, the game needs to stay open for it to work.")
+def mouseMovedMessage():
+    messagebox.showwarning("ERROR", "The mouse was moved so the process was canceled because that could cause errors. Please do not move your mouse till the process is done.")
 def loadJSON(path):
     try:
         with open(path) as f:
@@ -261,3 +265,6 @@ def isDictValid(reference, dictionary):
         if not isDictValid(reference[i], dictionary[i]):
             return False # value was found 
     return True
+def isGameFocused():
+    print(win32gui.GetForegroundWindow())
+    return win32gui.GetForegroundWindow() == hwnd

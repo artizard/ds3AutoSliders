@@ -1,6 +1,10 @@
 import time
 import pydirectinput
 import macroHelpers as mh
+import win32api
+import threading
+
+stopRecursion = threading.Event()
 
 def twoBoxes():
     """value 1 is the first box, 2 is second """
@@ -73,6 +77,9 @@ def tileMenu(menu):
     mh.back()
 def exportMacro(menu):
     #time.sleep(1)
+    if stopRecursion.is_set():
+        mh.mouseMovedMessage()
+        raise RuntimeError("Mouse moved")
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()
     if "menu" in menu:
@@ -88,6 +95,12 @@ def exportMacro(menu):
             case _:
                 print("invalid json error")
                 quit()
+        # if not mh.checkIfGameIsOpen():
+        #     raise RuntimeError("Game is no longer open, recursion stopped.")
+        if not mh.isGameFocused():
+            mh.gameClosedMesage()
+            stopRecursion.set()
+            raise RuntimeError("Game is no longer open, recursion stopped.")
     elif "tilesLinked" in menu: # linked menu with two linked aspects
         doubleLinkedMacro(menu)
         mh.back()
@@ -168,13 +181,26 @@ def doubleLinkedMacro(menu):
                         colorsLinked = False
     menu["tilesLinked"] = tilesLinked
     menu["colorsLinked"] = colorsLinked
-def exportCharacter():
-    dict = mh.getDictTemplate()
+def exportCharacter(dict):
     openedCorrectly = mh.loadOCR()
     if not openedCorrectly:
         return False
     # reset position
-    mh.back()
-    mh.enter()
-    exportMacro(dict)
+    stopRecursion.clear()
+
+    try:
+        thread = threading.Thread(target=checkIfMouseMoves)
+        thread.start()
+        mh.back()
+        mh.enter()
+        exportMacro(dict)
+    except RuntimeError:
+        return False
+    stopRecursion.set()
     return dict
+def checkIfMouseMoves():
+    startPos = win32api.GetCursorPos()
+    while not stopRecursion.is_set():
+        if win32api.GetCursorPos() != startPos:
+            stopRecursion.set()
+        time.sleep(.5)

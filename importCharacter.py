@@ -3,6 +3,10 @@ import pydirectinput
 import json
 import macroHelpers as mh
 import random
+import threading
+import win32api
+
+stopRecursion = threading.Event()
 
 def adjust(direction, isShift):
     """
@@ -194,6 +198,9 @@ def tileMenu(menu):
     tileSet(menu)
     mh.enter()
 def importMacro(menu):
+    if stopRecursion.is_set():
+        mh.mouseMovedMessage()
+        raise RuntimeError("Mouse moved")
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()
     if "menu" in menu:
@@ -209,6 +216,10 @@ def importMacro(menu):
             case _:
                 print("invalid json error")
                 quit()
+        if not mh.isGameFocused():
+            mh.gameClosedMesage()
+            stopRecursion.set()
+            raise RuntimeError("Game is no longer open, recursion stopped.")
     elif "tilesLinked" in menu: # linked menu with two linked aspects
         doubleLinkedMacro(menu)
         mh.back()
@@ -225,6 +236,7 @@ def importMacro(menu):
             importMacro(menu[nextMenu])
             mh.down()
         mh.back()
+        
             # down()
 def singleLinkedMacro(menu):
     """Helper method for importMacro() - processes the linked menus"""
@@ -273,14 +285,22 @@ def doubleLinkedMacro(menu):
                     mh.enter()
                     importMacro(menu[nextMenu]) # use base case to deal with 
         mh.down()
-def importCharacter(jsonPath, data):
+def importCharacter(data):
     openedCorrectly = mh.loadOCR()
     if not openedCorrectly:
         return False
     # reset position
-    mh.back()
-    mh.enter()
-    importMacro(data)
+    stopRecursion.clear()
+
+    try:
+        thread = threading.Thread(target=checkIfMouseMoves)
+        thread.start()
+        mh.back()
+        mh.enter()
+        importMacro(data)
+    except RuntimeError:
+        return False
+    stopRecursion.set()
     return True
 def setSliders(values):
     mh.enterDelay()
@@ -299,3 +319,10 @@ def setSliders(values):
     mh.enter()
     mh.back()
     mh.animDelay()
+def checkIfMouseMoves():
+    startPos = win32api.GetCursorPos()
+    while not stopRecursion.is_set():
+        print("test")
+        if win32api.GetCursorPos() != startPos:
+            stopRecursion.set()
+        time.sleep(.5)

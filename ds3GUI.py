@@ -219,7 +219,7 @@ class GUI:
         if not mh.isDictValid(self.templateDict, data):
             mh.invalidJsonMessage()
             return
-        isCompleted = importCharacter.importCharacter(self.importFilePath, data) # import character into game 
+        isCompleted = importCharacter.importCharacter(data) # import character into game 
         if not isCompleted:
             return # import was not successful so do not show completion screen 
         self.completeLabel.configure(text="Your import is complete!")
@@ -391,7 +391,7 @@ class GUI:
         else:
             self.exportStartButton.configure(state="disabled")
     def exportCommand(self):
-        dict = exportCharacter.exportCharacter()
+        dict = exportCharacter.exportCharacter(self.templateDict)
         if not dict: # don't do anything if export wasn't carried out 
             return
         mh.saveFile(self.exportFilePath, dict)
