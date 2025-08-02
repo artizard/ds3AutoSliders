@@ -7,11 +7,14 @@ import threading
 import win32api
 
 stopRecursion = threading.Event()
+optionBoxRegions = ((.439, .301),(.439, .347),(.439, .394)) 
 
 def adjust(direction, isShift):
-    """
-    direction: string (left or right),
-    isShift: boolean representing whether to increment by 10 or 1 (True is 10) 
+    """Adjusts the in-game slider by 1/10 in the desired direction (helper method for setVal).
+
+    Args:
+        direction (str): Can be either 'left' or 'right' representing the direction to move.
+        isShift (bool): Represents whether to hold shift (increment by 10 or 1 (True is 10)). 
     """
     if (isShift):
         pydirectinput.keyDown('shift')
@@ -19,98 +22,109 @@ def adjust(direction, isShift):
     if (isShift):
         pydirectinput.keyUp('shift')
 def setVal(value, startNum, confidence):
-    print("text :", startNum)
-    print("confidence :", confidence)
-    """This is more or less old code, I've just kept it in case the model is unstable. Unfortunately this breaks the
-        body proportion menu as those sliders are linked."""
-    if (confidence < .8):
-        print("LOW CONFIDENCE - BACKUP METHOD USED")
-        time.sleep(3)
-        # reset slider
-        for i in range(26):
-            adjust('left', True)
-        startNum = 0
-    slideAmount = value - int(startNum) # ensure it is an int 
-    print("slideAmount :", slideAmount)
+    """Sets the in-game slider to a specific value.
+        
+    Args:
+        value (int): The value to set the slider to.
+        startNum (int): The value that the slider starts at. 
+        confidence (float): The confidence on the startNum from the model. 
+    """
+    print("text :", startNum, "| confidence :", confidence) # DEBUG
+ 
+    slideAmount = value - startNum 
+    # determine direction, and ensure slideAmount is positive 
     if (slideAmount < 0):
         direction = 'left'
         slideAmount *= -1
     else:
         direction = 'right'
 
+    # SlideAmount is processed using shift+left/right then without shif. This is the fastest way to move the slider. 
     # set by 10's
-    for i in range((int)(slideAmount/10)):
+    for i in range(int(slideAmount/10)):
+        shouldContinue()
         adjust(direction, True)
-    if stopRecursion.is_set(): # additional check to end quicker
-        return
     # set by 1's
     for i in range(slideAmount % 10):
+        shouldContinue()
         adjust(direction, False)
 def colorSliders(r,g,b):
-    mh.up()
-    text,confidence = mh.processRegion(.494,.784,.521,.807, True)
-    setVal(b,text,confidence)
-    while True: # second check to ensure it worked as expected 
-            if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
-                return
-            text, confidence = mh.processRegion(.494,.784,.521,.807, True)
-            if text != b:
-                print("ERROR")
-                setVal(b,text,confidence)
-            else:
-                break
-    mh.up()
+    """Sets the in-game sliders to the argument values. This is done in reverse order due to the game ui (to make it faster).
 
-    text,confidence = mh.processRegion(.494,.738,.521,.761, True)
-    setVal(g,text,confidence)
-    while True: # second check to ensure it worked as expected 
-            if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
-                return
-            text, confidence = mh.processRegion(.494,.738,.521,.761, True)
-            if text != g:
+    Args:
+        r (int): The value to set the red slider to.
+        g (int): The value to set the green slider to.
+        b (int): The value to set the blue slider to.
+    """
+    setColorSlider(b, (.494,.784,.521,.807))
+    setColorSlider(g, (.494,.738,.521,.761))
+    setColorSlider(r, (.494,.691,.521,.715))
+def setColorSlider(value, region):
+    """Sets the in-game color slider to a particular value (helper method for colorSliders).
+
+    Args:
+        value (int): The value to set the slider to.
+        region (tuple[float, float, float, float]): The part of the screen that represents where the 
+            current slider is at. This is used for figuring out the slider's starting number. The coordinates
+            are expressed as floats from 0 to 1 in order to be resolution independent. 
+    """
+    shouldContinue()
+    mh.up() # move in-game cursor the correct slider 
+    gameValue,confidence = mh.processRegion(*region, True)  # gameValue represents the slider's value in-game 
+    setVal(value,gameValue,confidence)
+    while True: # second check to ensure the number in game matches value
+            shouldContinue()
+            gameValue, confidence = mh.processRegion(*region, True) 
+            if gameValue != value:
                 print("ERROR")
-                setVal(g,text,confidence)
-            else:
-                break
-    mh.up()
-    
-    text,confidence = mh.processRegion(.494,.691,.521,.715, True)
-    setVal(r,text,confidence)
-    while True: # second check to ensure it worked as expected 
-            if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
-                return
-            text, confidence = mh.processRegion(.494,.691,.521,.715, True)
-            if text != r:
-                print("ERROR")
-                setVal(r,text,confidence)
+                setVal(value,gameValue,confidence) 
             else:
                 break
 def twoBoxes(option):
-    """value 1 is the first box, 2 is second """
-    time.sleep(.07)
-    if mh.isSelected(.439, .301, (86,39,11),.05):
-        current = 1
-    else:
-        current = 2
-    print("current:", current)
-    if (current == option):
-        mh.enter()
-    else:
+    """Selects a specific option for a box menu with two options.'
+    
+    Args:
+        option (int): The option to select - 1 is the first box, 2 is second box
+    """
+    time.sleep(.07) # delay for animation to finish 
+    while True: 
+        if mh.isSelected(*optionBoxRegions[0], (86,39,11), .05):
+            current = 1
+            break
+        elif mh.isSelected(*optionBoxRegions[1], (86,39,11), .05):
+            current = 2
+            break
+        else: 
+            shouldContinue()
+            time.sleep(5) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+    if (current != option):
         mh.down()
-        mh.enter()
+    mh.enter()
 def threeBoxes(option):
-    """value 1 is the first box, 2 is second, 3 is third """
+    """Selects a specific option for a box menu with three options.'
+    
+    Args:
+        option (int): The option to select - 1 is the first box, 2 is second box, 3 is third box
+    """
     time.sleep(.05)
-    if mh.isSelected(.439, .301, (86,39,11),.05):
-        current = 1
-    elif mh.isSelected(.439, .347, (86,39,11),.05):
-        current = 2
-    else:
-        current = 3
+    # if none of the options are selected, then try again, this could 
+    # possibly be caused from animation where the highlight fades in and out
+    while True: 
+        if mh.isSelected(*optionBoxRegions[0], (86,39,11), .05):
+            current = 1
+            break
+        elif mh.isSelected(*optionBoxRegions[1], (86,39,11), .05):
+            current = 2
+            break
+        elif mh.isSelected(*optionBoxRegions[2], (86,39,11), .05):
+            current = 3
+            break
+        else: 
+            shouldContinue()
+            time.sleep(5) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+
     print("current:", current)
-    if (current == option):
-        mh.enter()
-    else:
+    if (current != option):
         steps = option - current 
         if steps > 0:
             for i in range(steps):
@@ -118,7 +132,7 @@ def threeBoxes(option):
         else:
             for i in range(abs(steps)):
                 mh.up()
-        mh.enter()
+    mh.enter()
 def tileSet(menu):
     value = menu["value"] - 1 
     currentTile = mh.findSelectedTile(menu) - 1 
@@ -210,9 +224,7 @@ def tileMenu(menu):
     tileSet(menu)
     mh.enter()
 def importMacro(menu):
-    print("CHECKING")
     if stopRecursion.is_set():
-        print("STOPPED")
         raise RuntimeError("Invalid game state")
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()
@@ -336,13 +348,19 @@ def checkIfInvalidState():
         it super hard to stop. """
     startPos = win32api.GetCursorPos()
     while not stopRecursion.is_set():
-        print(win32api.GetCursorPos(), ":", startPos)
         if win32api.GetCursorPos() != startPos:
             stopRecursion.set()
-            print("error")
             mh.mouseMovedMessage()
         elif not mh.isGameFocused():
             stopRecursion.set()
-            print("error")
             mh.gameClosedMesage()
         time.sleep(.1)
+def shouldContinue():
+    """Raises a runtime error if stopRecursion is set. This will be set in scenarios where 
+    the user does something that will mess up the import so the import will be stopped early. 
+
+    Raises: 
+        RuntimeError: Used as a way to exit the importMacro altogether.
+    """
+    if stopRecursion.is_set(): # end early if told to
+        raise RuntimeError("Invalid game state")

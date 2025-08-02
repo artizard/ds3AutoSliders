@@ -56,24 +56,44 @@ def animDelay():
 def enterDelay():
     time.sleep(.3)
 def isSelected(x,y,desiredColor,tolerance):
-    """finds if box is selected (is orange), by pixel at ratio x and y"""
+    """Returns whether or not the box at the given coordinates is selected (is orange).
+
+    Args:
+        x (float): x coordinate represented as float from 0 to 1.
+        y (float): y coordinate represented as float from 0 to 1.
+        desiredColor (tuple[int, int, int]): The RGB color that represents a box being selecting. 
+        tolerance (float): How close the in-game color has to be to desiredColor to be labeled as selected. 
+    
+    Returns:
+        bool: Represents whether or not the box at the coordinate is selected. 
+    """
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
-    left = int(rectCoords[0] + x * clientRect[2])
+    left = int(rectCoords[0] + x * clientRect[2]) # convert to pixel coordinates 
     top = int(rectCoords[1] + y * clientRect[3])
-    width = 1
-    height = 1
     with mss.mss() as sct:
-        mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+        mssScreenshot = sct.grab({'left': left, 'top': top, 'width': 1, 'height': 1})
         screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
         # mss.tools.to_png(mssScreenshot.rgb, mssScreenshot.size, output="pixelScreenshot.png")
         r,g,b = screenshot.getpixel((0,0))
-        print("desired:", desiredColor)
-        print("actual:",r,g,b)
+        # print("desired:", desiredColor)
+        # print("actual:",r,g,b)
+        print("color difference :", desiredColor[0]-r,desiredColor[1]-g,desiredColor[2]-b) # DEBUG
         return isColor(r,g,b,desiredColor,tolerance) 
 def isColor(r,g,b, desiredColor, tolerance):
-    """Returns whether the color matches the desired color or not, applies tolerance system"""
-    actualHue = colorsys.rgb_to_hls(r/255,g/255,b/255)[0]
+    """This is a helper method for isSelected that checks whether the game's color is close enough to the desired color.
+    
+    Args:
+        x (float): x coordinate represented as float from 0 to 1.
+        y (float): y coordinate represented as float from 0 to 1.
+        desiredColor (tuple[int, int, int]): The RGB color that represents a box being selecting. 
+        tolerance (float): How close the in-game color has to be to desiredColor to be labeled as selected. 
+    
+    Returns:
+        bool: Represents whether or not the box at the coordinate is selected. 
+    """
+    # Checking difference in hue works better than rgb because the color's brightness is variable due to the animation in-game. 
+    actualHue = colorsys.rgb_to_hls(r/255,g/255,b/255)[0] 
     desiredHue = colorsys.rgb_to_hls(desiredColor[0]/255,desiredColor[1]/255,desiredColor[2]/255)[0]
     if abs(desiredHue - actualHue) < tolerance:
         return True
@@ -179,7 +199,7 @@ def processRegion(x,y,x2,y2, isColor):
     answer = np.argmax(probs[0])
     confidence = probs[0][answer]
     
-    return answer, confidence
+    return int(answer), confidence
 def saveFile(filePath, dict):
     def stripNewLine(m):
         """gets rid of \n characters as well as the extra spaces"""
