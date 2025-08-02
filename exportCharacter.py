@@ -76,10 +76,8 @@ def tileMenu(menu):
     menu["value"] = currentTile + 1
     mh.back()
 def exportMacro(menu):
-    #time.sleep(1)
     if stopRecursion.is_set():
-        mh.mouseMovedMessage()
-        raise RuntimeError("Mouse moved")
+        raise RuntimeError("Invalid game state")
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()
     if "menu" in menu:
@@ -95,12 +93,6 @@ def exportMacro(menu):
             case _:
                 print("invalid json error")
                 quit()
-        # if not mh.checkIfGameIsOpen():
-        #     raise RuntimeError("Game is no longer open, recursion stopped.")
-        if not mh.isGameFocused():
-            mh.gameClosedMesage()
-            stopRecursion.set()
-            raise RuntimeError("Game is no longer open, recursion stopped.")
     elif "tilesLinked" in menu: # linked menu with two linked aspects
         doubleLinkedMacro(menu)
         mh.back()
@@ -189,7 +181,7 @@ def exportCharacter(dict):
     stopRecursion.clear()
 
     try:
-        thread = threading.Thread(target=checkIfMouseMoves)
+        thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
         mh.back()
         mh.enter()
@@ -198,9 +190,16 @@ def exportCharacter(dict):
         return False
     stopRecursion.set()
     return dict
-def checkIfMouseMoves():
+def checkIfInvalidState(): 
+    """Runs on a separate thread and checks if either the mouse is moved or the game is tabbed out/closed. Both cases
+        would mess up the macro, so recursion will stop. Otherwise the program will continue pressing buttons which makes
+        it super hard to stop. """
     startPos = win32api.GetCursorPos()
     while not stopRecursion.is_set():
         if win32api.GetCursorPos() != startPos:
             stopRecursion.set()
-        time.sleep(.5)
+            mh.mouseMovedMessage()
+        elif not mh.isGameFocused():
+            stopRecursion.set()
+            mh.gameClosedMesage()
+        time.sleep(.1)

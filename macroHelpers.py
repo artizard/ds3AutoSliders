@@ -122,6 +122,8 @@ def loadOCR():
     ocrOpened = True
     return True
 def checkIfGameIsOpen():
+    if not isGameFocused():
+        return False
     x,y,x2,y2 = (.0469,.1333,.4992,.7153)
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
@@ -266,5 +268,4 @@ def isDictValid(reference, dictionary):
             return False # value was found 
     return True
 def isGameFocused():
-    print(win32gui.GetForegroundWindow())
     return win32gui.GetForegroundWindow() == hwnd

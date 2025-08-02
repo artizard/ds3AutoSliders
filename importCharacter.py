@@ -25,7 +25,7 @@ def setVal(value, startNum, confidence):
         body proportion menu as those sliders are linked."""
     if (confidence < .8):
         print("LOW CONFIDENCE - BACKUP METHOD USED")
-        time.sleep(10)
+        time.sleep(3)
         # reset slider
         for i in range(26):
             adjust('left', True)
@@ -41,6 +41,8 @@ def setVal(value, startNum, confidence):
     # set by 10's
     for i in range((int)(slideAmount/10)):
         adjust(direction, True)
+    if stopRecursion.is_set(): # additional check to end quicker
+        return
     # set by 1's
     for i in range(slideAmount % 10):
         adjust(direction, False)
@@ -49,6 +51,8 @@ def colorSliders(r,g,b):
     text,confidence = mh.processRegion(.494,.784,.521,.807, True)
     setVal(b,text,confidence)
     while True: # second check to ensure it worked as expected 
+            if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
+                return
             text, confidence = mh.processRegion(.494,.784,.521,.807, True)
             if text != b:
                 print("ERROR")
@@ -60,6 +64,8 @@ def colorSliders(r,g,b):
     text,confidence = mh.processRegion(.494,.738,.521,.761, True)
     setVal(g,text,confidence)
     while True: # second check to ensure it worked as expected 
+            if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
+                return
             text, confidence = mh.processRegion(.494,.738,.521,.761, True)
             if text != g:
                 print("ERROR")
@@ -71,6 +77,8 @@ def colorSliders(r,g,b):
     text,confidence = mh.processRegion(.494,.691,.521,.715, True)
     setVal(r,text,confidence)
     while True: # second check to ensure it worked as expected 
+            if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
+                return
             text, confidence = mh.processRegion(.494,.691,.521,.715, True)
             if text != r:
                 print("ERROR")
@@ -154,6 +162,8 @@ def tileSet(menu):
             pydirectinput.press('left')
         else:
             pydirectinput.press('right')
+    if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
+        return
     if mh.findSelectedTile(menu) - 1 != value:
         tileSet(menu)
 def dropdownMenu(menu):
@@ -184,6 +194,8 @@ def dropdownMenu(menu):
 def sliderMenu(menu):
     sliderValues = []
     for i in menu:
+        if stopRecursion.is_set():
+            return
         if i != "menu":
             sliderValues.append(int(menu[i]))
     setSliders(sliderValues)
@@ -198,9 +210,10 @@ def tileMenu(menu):
     tileSet(menu)
     mh.enter()
 def importMacro(menu):
+    print("CHECKING")
     if stopRecursion.is_set():
-        mh.mouseMovedMessage()
-        raise RuntimeError("Mouse moved")
+        print("STOPPED")
+        raise RuntimeError("Invalid game state")
     if "features" in menu: # if at face detail menu, skip similar face option
         mh.down()
     if "menu" in menu:
@@ -216,10 +229,6 @@ def importMacro(menu):
             case _:
                 print("invalid json error")
                 quit()
-        if not mh.isGameFocused():
-            mh.gameClosedMesage()
-            stopRecursion.set()
-            raise RuntimeError("Game is no longer open, recursion stopped.")
     elif "tilesLinked" in menu: # linked menu with two linked aspects
         doubleLinkedMacro(menu)
         mh.back()
@@ -293,14 +302,14 @@ def importCharacter(data):
     stopRecursion.clear()
 
     try:
-        thread = threading.Thread(target=checkIfMouseMoves)
+        thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
         mh.back()
         mh.enter()
         importMacro(data)
     except RuntimeError:
         return False
-    stopRecursion.set()
+    stopRecursion.set() # ensure mouse polling stops 
     return True
 def setSliders(values):
     mh.enterDelay()
@@ -309,6 +318,8 @@ def setSliders(values):
             text,confidence = mh.processRegion(*mh.sliderRegions[i], False)
             setVal(values[i],text,confidence)
             while True: # second check to ensure it worked as expected 
+                if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
+                    return
                 text, confidence = mh.processRegion(*mh.sliderRegions[i], False)
                 if text != values[i]:
                     print("ERROR")
@@ -319,10 +330,19 @@ def setSliders(values):
     mh.enter()
     mh.back()
     mh.animDelay()
-def checkIfMouseMoves():
+def checkIfInvalidState(): 
+    """Runs on a separate thread and checks if either the mouse is moved or the game is tabbed out/closed. Both cases
+        would mess up the macro, so recursion will stop. Otherwise the program will continue pressing buttons which makes
+        it super hard to stop. """
     startPos = win32api.GetCursorPos()
     while not stopRecursion.is_set():
-        print("test")
+        print(win32api.GetCursorPos(), ":", startPos)
         if win32api.GetCursorPos() != startPos:
             stopRecursion.set()
-        time.sleep(.5)
+            print("error")
+            mh.mouseMovedMessage()
+        elif not mh.isGameFocused():
+            stopRecursion.set()
+            print("error")
+            mh.gameClosedMesage()
+        time.sleep(.1)
