@@ -25,7 +25,7 @@ colorModel = None
 colorInput_name = None
 gameOpenModel = None
 gameOpenInput_name = None
-
+print(ort.__file__)
 sliderRegions = ((.3445,.203,.372,.226),
                      (.3445,.285,.372,.308),
                      (.3445,.366,.372,.389),
@@ -114,15 +114,15 @@ def loadOCR():
 
     global sliderModel
     global sliderInput_name
-    sliderModel = ort.InferenceSession("models/sliderValueDetect.onnx")
+    sliderModel = ort.InferenceSession("assets/models/sliderValueDetect.onnx")
     sliderInput_name = sliderModel.get_inputs()[0].name
     global colorModel
     global colorInput_name
-    colorModel = ort.InferenceSession("models/colorValueDetect.onnx")
+    colorModel = ort.InferenceSession("assets/models/colorValueDetect.onnx")
     colorInput_name = colorModel.get_inputs()[0].name
     global gameOpenModel
     global gameOpenInput_name
-    gameOpenModel = ort.InferenceSession("models/gameOpenDetect.onnx")
+    gameOpenModel = ort.InferenceSession("assets/models/gameOpenDetect.onnx")
     gameOpenInput_name = gameOpenModel.get_inputs()[0].name
 
     global hwnd

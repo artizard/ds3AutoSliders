@@ -23,7 +23,7 @@ class GUI:
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")
         self.window.configure(fg_color="#0D0D0F")
-        self.window.iconbitmap("images/ui/icon.ico")
+        self.window.iconbitmap("assets/images/ui/icon.ico")
     
         self.initWindowSize()
         
@@ -43,7 +43,7 @@ class GUI:
         self.paneHeight = int(self.windowHeight / 1.5)
 
         """Kept so that self.dictionary can be reset to default template values"""
-        self.templateDict = mh.loadJSON("template.json")
+        self.templateDict = mh.loadJSON("assets/template.json")
 
         """Represents not only the structure of the menus, but the values for the sliders, dropdowns, etc."""
         self.dictionary = self.templateDict.copy()
@@ -54,7 +54,7 @@ class GUI:
         """keeps track of the current menu"""
         self.currentMenu = self.dictionary
 
-        self.background = ctk.CTkImage(Image.open("images/ui/background.png"), size=(self.windowWidth,self.windowHeight))
+        self.background = ctk.CTkImage(Image.open("assets/images/ui/background.png"), size=(self.windowWidth,self.windowHeight))
         ctk.CTkLabel(self.window, text="", image=self.background).grid(row=0,column=0,sticky="nsew")
         #self.backgroundLabel
 

@@ -224,11 +224,11 @@ class Tiles:
         return False
     def loadImages(self):
         """Loads the tile images into the dictionary to be used later"""
-        self.tileImages["noneSelected"] = ctk.CTkImage(Image.open("images/noneSelected.png"), size=(self.height//2,self.height//2))
+        self.tileImages["noneSelected"] = ctk.CTkImage(Image.open("assets/images/noneSelected.png"), size=(self.height//2,self.height//2))
         for key in self.tileImages:
             if key != "isLoaded" and key != "noneSelected":
                 for i in range(len(self.tileImages[key])):
-                    self.tileImages[key][i] = ctk.CTkImage(Image.open("images/"+ key + "/" + key +str(i+1)+".png"), 
+                    self.tileImages[key][i] = ctk.CTkImage(Image.open("assets/images/"+ key + "/" + key +str(i+1)+".png"), 
                                                            size=(self.height//2,self.height//2))
     def showTileImage(self, value):
         """
