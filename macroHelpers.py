@@ -226,10 +226,10 @@ def menuHasValues(menu):
     return False
 def findSelectedTile(menu):
     page = findTilePage(menu)
-    print("page:", page)
+    #print("page:", page)
     tile = currentTileOnPage()
-    print("tile:", tile)
-    print("final:", (tile + (page-1)*3))
+    #print("tile:", tile)
+    #print("final:", (tile + (page-1)*3))
     if page and tile: # if not null 
         return tile + (page-1)*3  
 def findTilePage(menu):
