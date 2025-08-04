@@ -39,6 +39,7 @@ tileCoords = [(.2625,.225),(.3427,.225),(.4234,.225),
               (.2625,.5019),(.3427,.5019),(.4234,.5019),
               (.2625,.6389),(.3427,.6389),(.4234,.6389),
               (.2625,.7731),(.3427,.7731),(.4234,.7731),]
+optionBoxRegions = ((.439, .301),(.439, .347),(.439, .394)) 
 tileScrollAmounts = {"hair":.0835,"brow":.1115,"beard":0,"eyelashes":0,"tattoo":.042, "pupil": 0} # how much the scroll bar moves per page, used to find the tile selected 
 def enter():
     pydirectinput.press('e')
@@ -100,9 +101,15 @@ def isColor(r,g,b, desiredColor, tolerance):
     else:
         return False
 def loadOCR():
+    # This is done regardless of whether ocr has already been opened because if ocr is opened then the game is closed and reopened,
+    # then the hwnd will no longer be correct. By doing it every time you avoid that scenario. 
+    global hwnd 
+    hwnd = win32gui.FindWindow(None, "DARK SOULS III")
+
     global ocrOpened
     if ocrOpened:
         print("OCR already opened")
+        
         time.sleep(3)
         if not checkIfGameIsOpen():
             notOpenedMessage()
@@ -125,8 +132,7 @@ def loadOCR():
     gameOpenModel = ort.InferenceSession("assets/models/gameOpenDetect.onnx")
     gameOpenInput_name = gameOpenModel.get_inputs()[0].name
 
-    global hwnd
-    hwnd = win32gui.FindWindow(None, "DARK SOULS III")
+    
     if (hwnd == 0):
         print("error")
         quit()  

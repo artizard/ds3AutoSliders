@@ -1,13 +1,123 @@
 import time
 import pydirectinput
-import json
 import macroHelpers as mh
-import random
 import threading
 import win32api
 
-stopRecursion = threading.Event()
-optionBoxRegions = ((.439, .301),(.439, .347),(.439, .394)) 
+stopRecursion = threading.Event() # if called then the import will be stopped 
+
+
+def importCharacter(data):
+    """This method starts the chain of importing a character.
+    
+    Args:
+        data (dict): The dictionary representing all of the values that need to be set. 
+    
+    Returns:
+        bool: Whether or not the import was carried out successfully. 
+    """
+    openedCorrectly = mh.loadOCR() 
+    if not openedCorrectly:
+        return False
+    # reset position
+    stopRecursion.clear()
+
+    # the thread polls to make sure the user does not do anything that could mess up the import. 
+    # If they do, it is caught by the try except statement and the import stops. 
+    try: 
+        thread = threading.Thread(target=checkIfInvalidState)
+        thread.start()
+        mh.back() # back then enter resets the position of the in-game cursor for the first menu 
+        mh.enter()
+        importMacro(data)
+    except RuntimeError: #
+        return False
+    stopRecursion.set() # ensure polling stops after import is done 
+    return True
+def importMacro(menu):
+    """Carries out the macro portion of the import. Recursively goes through all parts of the dict
+    and handles each submenu within. 
+
+    Args:
+        menu (dict): The current submenu.  
+    """
+    shouldContinue()
+    if "features" in menu: # if at face detail menu, skip 'similar face' option (not necessary for import)
+        mh.down()
+    if "menu" in menu: # handle the menus where a value is to be set - stops recursion for this path 
+        match menu["menu"]: 
+            case "dropdown":
+                dropdownMenu(menu)
+            case "sliders":
+                sliderMenu(menu)
+            case "colors":
+                colorMenu(menu)      
+            case "tiles":
+                tileMenu(menu)
+    # linked menus are handled differently than the rest 
+    elif "tilesLinked" in menu: # linked menu with two linked aspects
+        doubleLinkedMacro(menu)
+        mh.back()
+    elif "colorsLinked" in menu: # single linked menu 
+        singleLinkedMacro(menu)
+        mh.back()
+    else: # non linked button menu 
+        # recurse into next submenu 
+        for nextMenu in menu:
+            if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this menu, skip to next 
+                mh.down()
+                continue
+            mh.enter() # enter submenu in game 
+            importMacro(menu[nextMenu]) # handle submenu 
+            mh.down() # move down for next submenu 
+        mh.back() # exit submenu when done 
+def singleLinkedMacro(menu):
+    """Helper method for importMacro() - processes the linked menus that only have one linked attribute. (only color - not tiles)"""
+    colorsLinked = menu["colorsLinked"] # find out whether menu is linked or not (boolean)
+    for nextMenu in menu:
+        if nextMenu == "colorsLinked": # ignore this key as it does not represent a menu 
+            continue
+        if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this submenu, skip to next 
+                mh.down()
+                continue
+        elif colorsLinked: # decide whether to import if the colors are linked 
+            if menu[nextMenu]["linkType"] in ("all", "linked"): 
+                mh.enter()
+                importMacro(menu[nextMenu]) # use normal macro to handle
+        elif not colorsLinked: # decide whether to import if the colors are not linked 
+            if menu[nextMenu]["linkType"] in ("all", "unlinked"):
+                mh.enter()
+                importMacro(menu[nextMenu]) 
+        mh.down() # move down for next submenu 
+def doubleLinkedMacro(menu):
+    """Helper method for importMacro() - processes the linked menus that have two linked attributes. (color and tiles)"""
+    tilesLinked = menu["tilesLinked"] # find out if tiles are linked or not (boolean)
+    colorsLinked = menu["colorsLinked"] # find out if colors are linked or not (boolean)
+    for nextMenu in menu:
+        if nextMenu in ("tilesLinked","colorsLinked"): # ignore these keys as they do not represent menus 
+            continue
+        if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this submenu, skip to next 
+                mh.down()
+                continue
+        if menu[nextMenu]["menu"] == "tiles":
+            if tilesLinked:
+                if menu[nextMenu]["linkType"] in ("all", "linked"): # decide if a value should be set 
+                    mh.enter()
+                    importMacro(menu[nextMenu]) # use normal macro to handle
+            elif not tilesLinked:
+                if menu[nextMenu]["linkType"] in ("all", "unlinked"):
+                    mh.enter()
+                    importMacro(menu[nextMenu])
+        else: # colors menu
+            if colorsLinked:
+                if menu[nextMenu]["linkType"] in ("all", "linked"):
+                    mh.enter()
+                    importMacro(menu[nextMenu]) 
+            elif not colorsLinked:
+                if menu[nextMenu]["linkType"] in ("all", "unlinked"):
+                    mh.enter()
+                    importMacro(menu[nextMenu]) 
+        mh.down() # move down for next submenu 
 
 def sliderMenu(menu):
     """Handles selecting the desired values for slider menus.
@@ -171,10 +281,10 @@ def twoBoxes(option):
     """
     time.sleep(.07) # delay for animation to finish 
     while True: 
-        if mh.isSelected(*optionBoxRegions[0], (86,39,11), .05):
+        if mh.isSelected(*mh.optionBoxRegions[0], (86,39,11), .05):
             current = 1
             break
-        elif mh.isSelected(*optionBoxRegions[1], (86,39,11), .05):
+        elif mh.isSelected(*mh.optionBoxRegions[1], (86,39,11), .05):
             current = 2
             break
         else: 
@@ -193,13 +303,13 @@ def threeBoxes(option):
     # if none of the options are selected, then try again, this could 
     # possibly be caused from animation where the highlight fades in and out
     while True: 
-        if mh.isSelected(*optionBoxRegions[0], (86,39,11), .05):
+        if mh.isSelected(*mh.optionBoxRegions[0], (86,39,11), .05):
             current = 1
             break
-        elif mh.isSelected(*optionBoxRegions[1], (86,39,11), .05):
+        elif mh.isSelected(*mh.optionBoxRegions[1], (86,39,11), .05):
             current = 2
             break
-        elif mh.isSelected(*optionBoxRegions[2], (86,39,11), .05):
+        elif mh.isSelected(*mh.optionBoxRegions[2], (86,39,11), .05):
             current = 3
             break
         else: 
@@ -272,108 +382,6 @@ def tileSet(menu):
         return
     if mh.findSelectedTile(menu) - 1 != value: # if game value does not match desired (sign of an error) then attempt to set it again 
         tileSet(menu)
-
-def importCharacter(data):
-    openedCorrectly = mh.loadOCR()
-    if not openedCorrectly:
-        return False
-    # reset position
-    stopRecursion.clear()
-
-    try:
-        thread = threading.Thread(target=checkIfInvalidState)
-        thread.start()
-        mh.back()
-        mh.enter()
-        importMacro(data)
-    except RuntimeError:
-        return False
-    stopRecursion.set() # ensure mouse polling stops 
-    return True
-def importMacro(menu):
-    if stopRecursion.is_set():
-        raise RuntimeError("Invalid game state")
-    if "features" in menu: # if at face detail menu, skip similar face option
-        mh.down()
-    if "menu" in menu:
-        match menu["menu"]: # acts as base case/ end of recursion per each path 
-            case "dropdown":
-                dropdownMenu(menu)
-            case "sliders":
-                sliderMenu(menu)
-            case "colors":
-                colorMenu(menu)      
-            case "tiles":
-                tileMenu(menu)
-            case _:
-                print("invalid json error")
-                quit()
-    elif "tilesLinked" in menu: # linked menu with two linked aspects
-        doubleLinkedMacro(menu)
-        mh.back()
-    elif "colorsLinked" in menu: # single linked menu 
-        singleLinkedMacro(menu)
-        mh.back()
-    else: # non linked button menu 
-        # recurse into next submenu 
-        for nextMenu in menu:
-            if not mh.menuHasValues(menu[nextMenu]):
-                mh.down()
-                continue
-            mh.enter()
-            importMacro(menu[nextMenu])
-            mh.down()
-        mh.back()
-        
-            # down()
-def singleLinkedMacro(menu):
-    """Helper method for importMacro() - processes the linked menus"""
-    colorsLinked = menu["colorsLinked"]
-    for nextMenu in menu:
-        if nextMenu == "colorsLinked": # ignore this key as it does not represent a menu 
-            continue
-        if not mh.menuHasValues(menu[nextMenu]):
-                mh.down()
-                continue
-        elif colorsLinked:
-            if menu[nextMenu]["linkType"] in ("all", "linked"):
-                mh.enter()
-                importMacro(menu[nextMenu]) # use base case to deal with 
-        elif not colorsLinked:
-            if menu[nextMenu]["linkType"] in ("all", "unlinked"):
-                mh.enter()
-                importMacro(menu[nextMenu]) # use base case to deal with 
-        mh.down()
-def doubleLinkedMacro(menu):
-    """Works simlarly to singleLinkedMacro(), however it has extra checks to accommodate two link types"""
-    tilesLinked = menu["tilesLinked"]
-    colorsLinked = menu["colorsLinked"]
-    for nextMenu in menu:
-        if nextMenu in ("tilesLinked","colorsLinked"): # ignore these keys as they do not represent menus 
-            continue
-        if not mh.menuHasValues(menu[nextMenu]):
-                mh.down()
-                continue
-        if menu[nextMenu]["menu"] == "tiles":
-            if tilesLinked:
-                if menu[nextMenu]["linkType"] in ("all", "linked"):
-                    mh.enter()
-                    importMacro(menu[nextMenu]) # use base case to deal with 
-            elif not tilesLinked:
-                if menu[nextMenu]["linkType"] in ("all", "unlinked"):
-                    mh.enter()
-                    importMacro(menu[nextMenu]) # use base case to deal with 
-        else: # colors menu
-            if colorsLinked:
-                if menu[nextMenu]["linkType"] in ("all", "linked"):
-                    mh.enter()
-                    importMacro(menu[nextMenu]) # use base case to deal with 
-            elif not colorsLinked:
-                if menu[nextMenu]["linkType"] in ("all", "unlinked"):
-                    mh.enter()
-                    importMacro(menu[nextMenu]) # use base case to deal with 
-        mh.down()
-
 
 def checkIfInvalidState(): 
     """Runs on a separate thread and checks if either the mouse is moved or the game is tabbed out/closed. Both cases
