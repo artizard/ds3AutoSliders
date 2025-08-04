@@ -19,7 +19,6 @@ def importCharacter(data):
     openedCorrectly = mh.loadOCR() 
     if not openedCorrectly:
         return False
-    # reset position
     stopRecursion.clear()
 
     # the thread polls to make sure the user does not do anything that could mess up the import. 
@@ -30,7 +29,7 @@ def importCharacter(data):
         mh.back() # back then enter resets the position of the in-game cursor for the first menu 
         mh.enter()
         importMacro(data)
-    except RuntimeError: #
+    except RuntimeError: 
         return False
     stopRecursion.set() # ensure polling stops after import is done 
     return True
@@ -61,6 +60,7 @@ def importMacro(menu):
     elif "colorsLinked" in menu: # single linked menu 
         singleLinkedMacro(menu)
         mh.back()
+
     else: # non linked button menu 
         # recurse into next submenu 
         for nextMenu in menu:
@@ -72,7 +72,11 @@ def importMacro(menu):
             mh.down() # move down for next submenu 
         mh.back() # exit submenu when done 
 def singleLinkedMacro(menu):
-    """Helper method for importMacro() - processes the linked menus that only have one linked attribute. (only color - not tiles)"""
+    """Helper method for importMacro() - processes the linked menus that only have one linked attribute. 
+    
+    Args:
+        menu (dict): current submenu
+    """
     colorsLinked = menu["colorsLinked"] # find out whether menu is linked or not (boolean)
     for nextMenu in menu:
         if nextMenu == "colorsLinked": # ignore this key as it does not represent a menu 
@@ -90,7 +94,11 @@ def singleLinkedMacro(menu):
                 importMacro(menu[nextMenu]) 
         mh.down() # move down for next submenu 
 def doubleLinkedMacro(menu):
-    """Helper method for importMacro() - processes the linked menus that have two linked attributes. (color and tiles)"""
+    """Helper method for importMacro() - processes the linked menus that have two linked attributes. (color and tiles)
+
+    Args:
+        menu (dict): current submenu
+    """
     tilesLinked = menu["tilesLinked"] # find out if tiles are linked or not (boolean)
     colorsLinked = menu["colorsLinked"] # find out if colors are linked or not (boolean)
     for nextMenu in menu:
