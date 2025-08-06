@@ -2,7 +2,7 @@ import customtkinter as ctk
 from tkinter import filedialog
 import importCharacter
 from tkinter import font
-
+import pyglet
 import exportCharacter
 from manualPanes import Sliders, Colors, Labels, Dropdown, Tiles, spaceFormat
 import macroHelpers as mh
@@ -27,6 +27,10 @@ class GUI:
     
         self.initWindowSize()
         
+
+        pyglet.options['win32_gdi_font'] = True
+        pyglet.font.add_file("assets/fonts/OptimusPrinceps.ttf")
+        pyglet.font.add_file("assets/fonts/OptimusPrincepsSemiBold.ttf")
         self.font = ("OptimusPrincepsSemiBold",int(self.windowHeight/34),"normal")
         self.instructionsFont = ("OptimusPrinceps",int(self.windowHeight/34),"normal")
         self.bigFont = ("OptimusPrincepsSemiBold",int(self.windowHeight/17),"normal")
