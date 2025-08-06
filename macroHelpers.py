@@ -44,7 +44,6 @@ optionBoxRegions = ((.439, .301),(.439, .347),(.439, .394))
 # by seeing how far down the scroll bar is (different amount per each menu due to different sizes)
 # you can ascertain which tile is currently selected. 
 tileScrollAmounts = {"hair":.0835,"brow":.1115,"beard":0,"eyelashes":0,"tattoo":.042, "pupil": 0} 
-
 def enter():
     """Presses the 'e' key to simulate entering a menu in game."""
     pydirectinput.press('e')
@@ -127,7 +126,7 @@ def loadModel(key, path):
     """
     model = ort.InferenceSession(path)
     input_name = model.get_inputs()[0].name
-    model[key] = {"model":model,
+    models[key] = {"model":model,
                   "input_name":input_name}
 def loadOCR():
     """Loads certain things and does some checks before starting an import or export. 

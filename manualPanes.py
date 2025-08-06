@@ -241,7 +241,7 @@ class Tiles:
         else:
             self.tileImage.configure(image=self.tileImages[self.currentMenu["folder"]][value-1])
 def validateEdit(P):
-    """Validation command for text boxes. Limits from 0 to 255, but also allows the field to be cleared"""
+    """Validation function for text boxes. Limits from 0 to 255, but also allows the field to be cleared"""
     if (P.isdigit()):
         text = int(P)
         if(text >= 0 and text <= 255):
@@ -251,9 +251,9 @@ def validateEdit(P):
 
     return False
 def spaceFormat(text):
-        """Converts camel case to normal uppercase format (wordsLikeThis -> Words Like This)"""
-        formatted = re.sub(r"([a-z])([A-Z])", r"\1 \2", text) # space between camel case
-        formatted = re.sub(r"([a-z])([0-9])", r"\1 \2", formatted) # space between letters and numbers
-        formatted = re.sub(r"([a-z])(\()", r"\1 \2", formatted) # space between letters and parenthesis 
-        formatted = re.sub(r"(\.)([a-z])", r"\1 \2", formatted) # space after . 
-        return formatted.title()
+    """Converts camel case to normal uppercase format (wordsLikeThis -> Words Like This)"""
+    formatted = re.sub(r"([a-z])([A-Z])", r"\1 \2", text) # space between camel case
+    formatted = re.sub(r"([a-z])([0-9])", r"\1 \2", formatted) # space between letters and numbers
+    formatted = re.sub(r"([a-z])(\()", r"\1 \2", formatted) # space between letters and parenthesis 
+    formatted = re.sub(r"(\.)([a-z])", r"\1 \2", formatted) # space after . 
+    return formatted.title()
