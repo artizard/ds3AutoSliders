@@ -20,14 +20,15 @@ def importCharacter(data):
     if not openedCorrectly:
         return False
     stopRecursion.clear()
+    pydirectinput.moveTo(0,0)
 
     # the thread polls to make sure the user does not do anything that could mess up the import. 
     # If they do, it is caught by the try except statement and the import stops. 
     try: 
         thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
-        mh.back() # back then enter resets the position of the in-game cursor for the first menu 
-        mh.enter()
+        mh.inputKey("q") # back then enter resets the position of the in-game cursor for the first menu 
+        mh.inputKey("e")
         importMacro(data)
     except RuntimeError: 
         return False
@@ -42,7 +43,7 @@ def importMacro(menu):
     """
     shouldContinue()
     if "features" in menu: # if at face detail menu, skip 'similar face' option (not necessary for import)
-        mh.down()
+        mh.inputKey("down")
     if "menu" in menu: # handle the menus where a value is to be set - stops recursion for this path 
         match menu["menu"]: 
             case "dropdown":
@@ -56,21 +57,21 @@ def importMacro(menu):
     # linked menus are handled differently than the rest 
     elif "tilesLinked" in menu: # linked menu with two linked aspects
         doubleLinkedMacro(menu)
-        mh.back()
+        mh.inputKey("q")
     elif "colorsLinked" in menu: # single linked menu 
         singleLinkedMacro(menu)
-        mh.back()
+        mh.inputKey("q")
 
     else: # non linked button menu 
         # recurse into next submenu 
         for nextMenu in menu:
             if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this menu, skip to next 
-                mh.down()
+                mh.inputKey("down")
                 continue
-            mh.enter() # enter submenu in game 
+            mh.inputKey("e") # enter submenu in game 
             importMacro(menu[nextMenu]) # handle submenu 
-            mh.down() # move down for next submenu 
-        mh.back() # exit submenu when done 
+            mh.inputKey("down") # move down for next submenu 
+        mh.inputKey("q") # exit submenu when done 
 def singleLinkedMacro(menu):
     """Helper method for importMacro() - processes the linked menus that only have one linked attribute. 
     
@@ -82,17 +83,17 @@ def singleLinkedMacro(menu):
         if nextMenu == "colorsLinked": # ignore this key as it does not represent a menu 
             continue
         if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this submenu, skip to next 
-                mh.down()
+                mh.inputKey("down")
                 continue
         elif colorsLinked: # decide whether to import if the colors are linked 
             if menu[nextMenu]["linkType"] in ("all", "linked"): 
-                mh.enter()
+                mh.inputKey("e")
                 importMacro(menu[nextMenu]) # use normal macro to handle
         elif not colorsLinked: # decide whether to import if the colors are not linked 
             if menu[nextMenu]["linkType"] in ("all", "unlinked"):
-                mh.enter()
+                mh.inputKey("e")
                 importMacro(menu[nextMenu]) 
-        mh.down() # move down for next submenu 
+        mh.inputKey("down") # move down for next submenu 
 def doubleLinkedMacro(menu):
     """Helper method for importMacro() - processes the linked menus that have two linked attributes. (color and tiles)
 
@@ -105,27 +106,27 @@ def doubleLinkedMacro(menu):
         if nextMenu in ("tilesLinked","colorsLinked"): # ignore these keys as they do not represent menus 
             continue
         if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this submenu, skip to next 
-                mh.down()
+                mh.inputKey("down")
                 continue
         if menu[nextMenu]["menu"] == "tiles":
             if tilesLinked:
                 if menu[nextMenu]["linkType"] in ("all", "linked"): # decide if a value should be set 
-                    mh.enter()
+                    mh.inputKey("e")
                     importMacro(menu[nextMenu]) # use normal macro to handle
             elif not tilesLinked:
                 if menu[nextMenu]["linkType"] in ("all", "unlinked"):
-                    mh.enter()
+                    mh.inputKey("e")
                     importMacro(menu[nextMenu])
         else: # colors menu
             if colorsLinked:
                 if menu[nextMenu]["linkType"] in ("all", "linked"):
-                    mh.enter()
+                    mh.inputKey("e")
                     importMacro(menu[nextMenu]) 
             elif not colorsLinked:
                 if menu[nextMenu]["linkType"] in ("all", "unlinked"):
-                    mh.enter()
+                    mh.inputKey("e")
                     importMacro(menu[nextMenu]) 
-        mh.down() # move down for next submenu 
+        mh.inputKey("down") # move down for next submenu 
 
 def sliderMenu(menu):
     """Handles selecting the desired values for slider menus.
@@ -144,36 +145,35 @@ def setSliders(values):
     Args:
         values (list[int]): Each value in the list represents a slider to set to its respective value. 
     """
-    mh.enterDelay()
+    time.sleep(mh.enterDelay)
     for i in range(len(values)): # for all sliders 
         if values[i] != -1: # ignore if user didn't set a value in json
-            currentValue,confidence = mh.processRegion(*mh.sliderRegions[i], False)
-            setVal(values[i],currentValue,confidence)
+            currentValue = mh.processRegion(*mh.sliderRegions[i], False)
+            setVal(values[i],currentValue)
 
             # if game value does not match the desired one (something went wrong such as missed inputs), 
             # set the slider again till it is correct  
             while True: 
                 shouldContinue() # avoid recursion if process is to be stopped 
-                currentValue, confidence = mh.processRegion(*mh.sliderRegions[i], False)
+                currentValue = mh.processRegion(*mh.sliderRegions[i], False)
                 if currentValue != values[i]: 
                     print("ERROR")
-                    setVal(values[i],currentValue,confidence)
+                    mh.estimatedFPS -= 2
+                    setVal(values[i],currentValue)
                 else:
                     break
-        mh.down() # go down to next slider in game 
+        mh.inputKey("down") # go down to next slider in game 
     # confirm changes and go back 
-    mh.enter()
-    mh.back()
-    mh.animDelay() 
-def setVal(value, startNum, confidence):
+    mh.inputKey("e")
+    mh.inputKey("q", mh.animDelay) 
+def setVal(value, startNum):
     """Sets the in-game slider to a specific value.
         
     Args:
         value (int): The value to set the slider to.
         startNum (int): The value that the slider starts at. 
-        confidence (float): The confidence on the startNum from the model. 
     """
-    print("text :", startNum, "| confidence :", confidence) # DEBUG
+    print("text :", startNum) # DEBUG
  
     slideAmount = value - startNum 
     # determine direction, and ensure slideAmount is positive 
@@ -201,9 +201,10 @@ def adjust(direction, isShift):
     """
     if (isShift):
         pydirectinput.keyDown('shift')
-    pydirectinput.press(direction)
+    mh.inputNoScreenshot(direction)
     if (isShift):
         pydirectinput.keyUp('shift')
+    mh.waitFrame() # prevent from going so fast you get missed inputs 
 
 def colorMenu(menu):
     """Handles selecting the desired values for color menus (rgb menus such as for base skin color).
@@ -213,7 +214,7 @@ def colorMenu(menu):
     """
     colorValues = [menu["red"],menu["green"],menu["blue"]]
     colorSliders(*colorValues)
-    mh.enter()
+    mh.inputKey("e")
 def colorSliders(r,g,b):
     """Sets the in-game sliders to the argument values. This is done in reverse order due to the game ui (to make it faster).
 
@@ -235,15 +236,16 @@ def setColorSlider(value, region):
             are expressed as floats from 0 to 1 in order to be resolution independent. 
     """
     shouldContinue()
-    mh.up() # move in-game cursor the correct slider 
-    gameValue,confidence = mh.processRegion(*region, True)  # gameValue represents the slider's value in-game 
-    setVal(value,gameValue,confidence)
+    mh.inputKey("up") # move in-game cursor the correct slider 
+    gameValue = mh.processRegion(*region, True)  # gameValue represents the slider's value in-game 
+    setVal(value,gameValue)
     while True: # second check to ensure the number in game matches value
             shouldContinue()
-            gameValue, confidence = mh.processRegion(*region, True) 
+            gameValue = mh.processRegion(*region, True) 
             if gameValue != value:
                 print("ERROR")
-                setVal(value,gameValue,confidence) 
+                mh.estimatedFPS -= 2
+                setVal(value,gameValue) 
             else:
                 break
 
@@ -262,7 +264,7 @@ def dropdownMenu(menu):
     if menu["value"] == "": # this means the user did not select an option for the json file, so exit out 
         if isGender:
             time.sleep(.3) # delay so input is not ignored 
-        mh.enter() # exit menu 
+        mh.inputKey("e") # exit menu 
         if isGender:
             time.sleep(.2)
         return
@@ -272,9 +274,10 @@ def dropdownMenu(menu):
 
     if isGender:
         time.sleep(.3)
-        pydirectinput.press('left')
-        mh.enter()
+        mh.inputKey('left')
+        mh.inputKey("e")
         time.sleep(.2)
+        mh.updateGameScreen() # update to compensate for animation 
     match numOptions:
         case 2:
             twoBoxes(desiredValue)
@@ -287,7 +290,7 @@ def twoBoxes(option):
     Args:
         option (int): The option to select - 1 is the first box, 2 is second box
     """
-    time.sleep(.07) # delay for animation to finish 
+    time.sleep(mh.animDelay) # delay for animation to finish 
     while True: 
         if mh.isSelected(*mh.optionBoxRegions[0], (86,39,11), .05):
             current = 1
@@ -297,10 +300,13 @@ def twoBoxes(option):
             break
         else: 
             shouldContinue()
-            time.sleep(5) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+            print("DROPDOWN ERROR")
+            time.sleep(3) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+            twoBoxes(option)
+            return
     if (current != option):
-        mh.down()
-    mh.enter()
+        mh.inputKey("down")
+    mh.inputKey("e")
 def threeBoxes(option):
     """Selects a specific option for a box menu with three options.'
     
@@ -322,18 +328,20 @@ def threeBoxes(option):
             break
         else: 
             shouldContinue()
-            time.sleep(5) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+            time.sleep(3) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+            threeBoxes(option)
+            return
 
     print("current:", current)
     if (current != option):
         steps = option - current 
         if steps > 0:
             for i in range(steps):
-                mh.down()
+                mh.inputKey("down")
         else:
             for i in range(abs(steps)):
-                mh.up()
-    mh.enter()
+                mh.inputKey("up")
+    mh.inputKey("e")
 
 def tileMenu(menu):
     """Selects the desired value for a tile menu in game (menu with the images such as hair styles)
@@ -343,10 +351,10 @@ def tileMenu(menu):
             is used for figuring out which tile is selected. 
     """
     if menu["value"] == -1: # if value was not set in json, then ignore 
-        mh.back()
+        mh.inputKey("q")
         return
     tileSet(menu) # set tile 
-    mh.enter() # complete tile selection in game
+    mh.inputKey("e") # complete tile selection in game
 def tileSet(menu): 
     """Sets the in-game tile (menu with images) to a specific value
 
@@ -358,10 +366,17 @@ def tileSet(menu):
     currentTile = mh.findSelectedTile(menu) - 1 # current in-game tile selected
     print("current:", currentTile)
     print("desired:", value)
-    # if currentTile == (menu["numTiles"] - 1): NOT NECESSARY??? 
-    #     print("last tile")
-    #     pydirectinput.press('right')
-    #     currentTile = 0
+    #time.sleep(5)
+    # fix for issue with odd number menus at the bottom 
+    if menu["numTiles"] % 2 == 1:
+        if int(currentTile/3) == int(menu["numTiles"]/3):
+            row = currentTile % 3
+            if row == 1:
+                mh.inputNoScreenshot("left")
+            elif row == 2:
+                mh.inputNoScreenshot("left")
+                mh.inputNoScreenshot("left")
+
     valueX = value % 3 # find column of desired
     valueY = int(value / 3) # find row 
     currentTileX = currentTile % 3 # find column of current
@@ -381,14 +396,19 @@ def tileSet(menu):
         yDirection = "down"
     yOffset = abs(yOffset)
 
-    for i in range(yOffset): # set value in game 
-        pydirectinput.press(yDirection) 
     for i in range(xOffset):
-        pydirectinput.press(xDirection)
+        mh.inputNoScreenshot(xDirection)
+    for i in range(yOffset): # set value in game 
+        mh.inputNoScreenshot(yDirection)
+    
 
     if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
         return
+    mh.waitFrame()
+    mh.updateGameScreen()
     if mh.findSelectedTile(menu) - 1 != value: # if game value does not match desired (sign of an error) then attempt to set it again 
+        print("ERROR")
+        time.sleep(3)
         tileSet(menu)
 
 def checkIfInvalidState(): 

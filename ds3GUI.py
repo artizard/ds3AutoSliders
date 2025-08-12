@@ -10,15 +10,39 @@ import time
 from PIL import Image
 class GUI:
     def __init__(self):
-        self.window = ctk.CTk()
-        # fonts = list(font.families())
-        # fonts.sort()
-        # print(fonts)
-        # if "" in fonts:
-        #     print("font available")
-        # else:
-        #     print("font NOT available")
+
+        # mh.loadOCR()
+        # print("TEST")
+        # time.sleep(5)
+        
+        # while True:
+        #     mh.updateGameScreen()
+        #     mh.findSelectedTile({"folder":"tattoo"})
+        #     time.sleep(1)
+        # mh.loadOCR()
+        # #time.sleep(5)
+        # start = time.perf_counter()
+        # # tile = mh.findSelectedTile({
+        # #     "menu": "tiles",
+        # #     "linkType": "all",
+        # #     "numTiles": 24,
+        # #     "folder": "hair",
+        # #     "value": 22
+        # #  })
+        # # for i in range(1):
+
+        # #     mh.isSelected(*mh.tileCoords[0], (86,39,11),.05)
+        # #mh.inputKey("up")
+        # left = int(0)
+        # top = int(0)
+        # width = int(1920 * .0275)
+        # height = int(1080 * .023)
+
+        # mssScreenshot = mh.sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+        # end = time.perf_counter()
+        # print( "time:", end-start)
         # quit()
+        self.window = ctk.CTk()
         
         self.window.resizable(False,False)
         self.window.title("DS3 AutoSliders")
@@ -27,7 +51,6 @@ class GUI:
     
         self.initWindowSize()
         
-
         pyglet.options['win32_gdi_font'] = True
         pyglet.font.add_file("assets/fonts/OptimusPrinceps.ttf")
         pyglet.font.add_file("assets/fonts/OptimusPrincepsSemiBold.ttf")

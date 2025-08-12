@@ -13,13 +13,30 @@ from tkinter import messagebox
 """macroHelpers is a module that contains many general helper methods and attributes for 
     the other classes to use."""
 # The game can only register 1 input per frame, so the pause is ~1/60 
-pydirectinput.PAUSE = 0.017 
+#pydirectinput.PAUSE = 0.017 
+#pydirectinput.PAUSE = 1/59
+fileNum = 0
+scrollNum = 0
+
+pydirectinput.PAUSE = 0 # handle pausing otherwise 
+#lastInputTime = 0 
+estimatedFPS = 30
 ctypes.windll.user32.SetProcessDPIAware() # fix scaling issues
 hwnd = None # represents the dark souls 3 menu 
 ocrOpened = False # represents whether or not the onnx models have been prepared yet 
 models = {} # holds the three onnx models 
+gameScreen = None
+# initialize these here instead of every method call 
+sct = mss.mss() 
+# region of the screenshot in terms of (x,y,w,h)
+screenshotRegion = (.061,.149,.453,.705)
+animDelay = .25
+enterDelay = .3
+clientRect = None
+rectCoords = None
 
-# This represents the in-game boundaries of each slider on slider menus 
+# This represents the in-game boundaries of each slider on slider menus, coords are in 
+# terms of the entire window
 sliderRegions = ((.3445,.203,.372,.226),
                      (.3445,.285,.372,.308),
                      (.3445,.366,.372,.389),
@@ -29,33 +46,56 @@ sliderRegions = ((.3445,.203,.372,.226),
                      (.3445,.692,.372,.715),
                      (.3445,.773,.372,.796))
 
-# This represents the in-game coordinates for each tile on the tile(image) menus
-tileCoords = [(.2625,.225),(.3427,.225),(.4234,.225),
-              (.2625,.3657),(.3427,.3657),(.4234,.3657),
-              (.2625,.5019),(.3427,.5019),(.4234,.5019),
-              (.2625,.6389),(.3427,.6389),(.4234,.6389),
-              (.2625,.7731),(.3427,.7731),(.4234,.7731),]
+sliderRegionsGameScreen = ((0.6258,0.0766,0.6865,0.1092),
+                           (0.6258,0.1929,0.6865,0.2255),
+                           (0.6258,0.3078,0.6865,0.3404),
+                           (0.6258,0.4241,0.6865,0.4567),
+                           (0.6258,0.5390,0.6865,0.5716),
+                           (0.6258,0.6539,0.6865,0.6865),
+                           (0.6258,0.7702,0.6865,0.8028),
+                           (0.6258,0.8851,0.6865,0.9177))
+
+# This represents the in-game coordinates for each tile on the tile(image) menus, coords are in
+# terms of the gameScreen screenshot.
+tileCoords = [(0.4448,0.1078), (0.6219,0.1078), (0.8000,0.1078), 
+              (0.4448,0.3074), (0.6219,0.3074), (0.8000,0.3074), 
+              (0.4448,0.5006), (0.6219,0.5006), (0.8000,0.5006), 
+              (0.4448,0.6949), (0.6219,0.6949), (0.8000,0.6949), 
+              (0.4448,0.8852), (0.6219,0.8852), (0.8000,0.8852),]
 
 # This represents the in-game coordinates for the option box menus (such as age). The coordinates
-# are specifically in a good place for the program to detect which is selected by color. 
-optionBoxRegions = ((.439, .301),(.439, .347),(.439, .394)) 
+# are specifically in a good place for the program to detect which is selected by color. Coords
+# are in terms of the gameScreen screenshot 
+optionBoxRegions = ((0.8344,0.2156), (0.8344,0.2809), (0.8344,0.3475)) 
 
 # This is used for the tile (image) menus. This is used to figure out what tile is selected - 
 # by seeing how far down the scroll bar is (different amount per each menu due to different sizes)
 # you can ascertain which tile is currently selected. 
-tileScrollAmounts = {"hair":.0835,"brow":.1115,"beard":0,"eyelashes":0,"tattoo":.042, "pupil": 0} 
-def enter():
-    """Presses the 'e' key to simulate entering a menu in game."""
-    pydirectinput.press('e')
-def back():
-    """Presses the 'q' key to simulate going back a menu in game."""
-    pydirectinput.press('q')
-def down():
-    """Presses the 'down' key to simulate moving the selection down in game."""
-    pydirectinput.press('down')
-def up():
-    """Presses the 'up' key to simulate moving the selection up in game."""
-    pydirectinput.press('up')
+tileScrollAmounts = {"hair":.1184,"brow":.1582,"beard":0,"eyelashes":0,"tattoo":.0596, "pupil": 0} 
+def inputKey(key, delay=0):
+    """Presses the key specified by the arg as well as updates the screenshot"""
+    #global lastInputTime
+    #timeSinceInput = time.perf_counter() - lastInputTime
+    #sleepLeft = (1/estimatedFPS) - timeSinceInput
+    #print("sleep left:", sleepLeft)
+    #if sleepLeft > 0:
+    #    time.sleep(sleepLeft)
+    print("key:", key)
+    pydirectinput.keyDown(key)
+    #time.sleep(.02)
+    waitFrame()
+    #time.sleep(.1)
+    pydirectinput.keyUp(key)
+    waitFrame()
+    waitFrame()
+    #waitFrame()
+    #time.sleep(.01)
+    
+    time.sleep(delay)
+    updateGameScreen()
+    
+    lastInputTime = time.perf_counter()
+    
 def scrollDown(times):
     """Simulates scrolling down in game a specified amount of times.
     
@@ -63,15 +103,15 @@ def scrollDown(times):
         times (int): Number of times to scroll down. 
     """
     for i in range(times):
-        down()
-def animDelay():
-    """Stalls program to allow for certain animations in game to finish. Without this, inputs
-    during the animation will be ignored, causing massive issues."""
-    time.sleep(.25) #.2 might be fine?
-def enterDelay():
-    """Stalls program to allow for certain animations in game to finish. Without this, inputs
-    during the animation will be ignored, causing massive issues."""
-    time.sleep(.3)
+        inputKey("down")
+# def animDelay():
+#     """Stalls program to allow for certain animations in game to finish. Without this, inputs
+#     during the animation will be ignored, causing massive issues."""
+#     time.sleep(.25) #.2 might be fine?
+# def enterDelay():
+#     """Stalls program to allow for certain animations in game to finish. Without this, inputs
+#     during the animation will be ignored, causing massive issues."""
+#     time.sleep(.3)
 def isSelected(x,y,desiredColor,tolerance):
     """Returns whether or not the box at the given coordinates is selected (is orange).
 
@@ -84,19 +124,24 @@ def isSelected(x,y,desiredColor,tolerance):
     Returns:
         bool: Represents whether or not the box at the coordinate is selected. 
     """
-    clientRect = win32gui.GetClientRect(hwnd)
-    rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
-    left = int(rectCoords[0] + x * clientRect[2]) # convert to pixel coordinates 
-    top = int(rectCoords[1] + y * clientRect[3])
-    with mss.mss() as sct:
-        mssScreenshot = sct.grab({'left': left, 'top': top, 'width': 1, 'height': 1})
-        screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
-        # mss.tools.to_png(mssScreenshot.rgb, mssScreenshot.size, output="pixelScreenshot.png")
-        r,g,b = screenshot.getpixel((0,0))
-        # print("desired:", desiredColor)
-        # print("actual:",r,g,b)
-        print("color difference :", desiredColor[0]-r,desiredColor[1]-g,desiredColor[2]-b) # DEBUG
-        return isColor(r,g,b,desiredColor,tolerance) 
+    w,h = gameScreen.size
+    x = int(x * w) # convert to pixel coordinates 
+    y = int(y * h)
+
+    #point = getGamePoint(x,y)
+    r,g,b = getGamePoint(x,y)
+    # for all pixels in point 
+    # for i in range(3):
+    #     for j in range(3):
+    #         r,g,b = point.getpixel((i,j))
+    #         current = isColor(r,g,b,desiredColor,tolerance) 
+    #         print(current)
+    #         if current:
+    #             print("FINAL : TRUE")
+    #             return True
+
+    #print("FINAL : FALSE")
+    return isColor(r,g,b,desiredColor,tolerance) 
 def isColor(r,g,b, desiredColor, tolerance):
     """This is a helper method for isSelected that checks whether the game's color is close enough to the desired color.
     
@@ -138,14 +183,17 @@ def loadOCR():
     """
     # This is done regardless of whether ocr has already been opened because if ocr is opened then the game is closed and reopened,
     # then the hwnd will no longer be correct. By doing it every time you avoid that scenario. 
+    # Additionally make sure the window location updates if necessary. 
     global hwnd 
+    global clientRect
+    global rectCoords 
     hwnd = win32gui.FindWindow(None, "DARK SOULS III")
-
+    clientRect = win32gui.GetClientRect(hwnd)
+    rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
+    waitTime = 3
     global ocrOpened
     if ocrOpened:
-        print("OCR already opened")
-        
-        time.sleep(5)
+        time.sleep(waitTime)
         if not checkIfGameIsOpen():
             notOpenedMessage()
             return False
@@ -159,7 +207,7 @@ def loadOCR():
     loadModel("gameOpen","assets/models/gameOpenDetect.onnx")
 
     endFullscreenWait = time.time()
-    timeLeftToWait = 5 - (endFullscreenWait-startFullscreenWait)
+    timeLeftToWait = waitTime - (endFullscreenWait-startFullscreenWait)
     if (timeLeftToWait > 0):
         time.sleep(timeLeftToWait)
 
@@ -179,16 +227,13 @@ def checkIfGameIsOpen():
     
     # Get the correct coordinates, adjusting for windowposition on screen 
     x,y,x2,y2 = (.0469,.1333,.4992,.7153)
-    clientRect = win32gui.GetClientRect(hwnd)
-    rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
     left = int(rectCoords[0] + x * clientRect[2])
     top = int(rectCoords[1] + y * clientRect[3])
     width = int((x2-x) * clientRect[2])
     height = int((y2-y) * clientRect[3])
 
-    with mss.mss() as sct:
-        mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
-        screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
+    mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+    screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
     resized = ImageOps.fit(screenshot, (290, 210), method=Image.LANCZOS, centering=(0.5, 0.5))
     imageArray = np.array(resized).astype(np.float32)
     imageArray = imageArray.reshape(1, 210, 290, 3)
@@ -216,22 +261,20 @@ def processRegion(x,y,x2,y2, isColor):
     
     Returns:
         int: the number detected
-        float: the confidence value for the answer (0 to 1)
     """
 
     # Get the correct coordinates, adjusting for window position on screen 
-    clientRect = win32gui.GetClientRect(hwnd)
-    rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
-
     left = int(rectCoords[0] + x * clientRect[2])
     top = int(rectCoords[1] + y * clientRect[3])
     width = int((x2-x) * clientRect[2])
     height = int((y2-y) * clientRect[3])
 
-    with mss.mss() as sct:
-        mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
-        screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
-        screenshot = ImageOps.grayscale(screenshot)
+    mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+    screenshot = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
+    return runModel(screenshot, isColor)
+    
+def runModel(screenshot, isColor):
+    screenshot = ImageOps.grayscale(screenshot)
 
     resized = ImageOps.fit(screenshot, (35, 17), method=Image.LANCZOS, centering=(0.5, 0.5))
     imageArray = np.array(resized).astype(np.float32)
@@ -245,9 +288,8 @@ def processRegion(x,y,x2,y2, isColor):
         probs = outputs[0]
 
     answer = np.argmax(probs[0])
-    confidence = probs[0][answer]
-    
-    return int(answer), confidence
+    return int(answer)
+
 def saveFile(filePath, data):
     """Saves dict to file path as json.
     
@@ -299,6 +341,7 @@ def findSelectedTile(menu):
     """
     page = findTilePage(menu)
     tile = currentTileOnPage()
+    print(f"page:{page} tile:{tile}")
     if page and tile: # if not null 
         return tile + (page-1)*3  
 def findTilePage(menu):
@@ -317,12 +360,11 @@ def findTilePage(menu):
     scrollAmount = tileScrollAmounts[specificMenu]
     if scrollAmount == 0: # page without scrollbar, so there is only 1 page
         return 1
-    
-    sliderPos = .167 # first possible scroll bar position 
+    sliderPos = 0.0258 # first possible scroll bar position 
     pageNum = 1
     scrollBottom = .832 # position of the bottom of where the scroll bar can go 
     while sliderPos < scrollBottom:
-        if isSelected(.5026, sliderPos, (131,91,31), .05):
+        if isSelected(.9764, sliderPos, (131,91,31), .05):
             return pageNum
         sliderPos += scrollAmount
         pageNum += 1
@@ -346,6 +388,7 @@ def currentTileOnPage():
     # call again if none found - this could cause an infinite loop but that shouldn't be a real issue 
     time.sleep(.1)
     print("none found")
+    updateGameScreen()
     return currentTileOnPage()
 def notOpenedMessage():
     """Shows dialog box message for the scenario where the game was not 
@@ -409,3 +452,45 @@ def isGameFocused():
         bool: Whether or not the window is focused. 
     """
     return win32gui.GetForegroundWindow() == hwnd
+def getGameRegion(x,y,x2,y2):
+    w,h = gameScreen.size
+    x = int(x * w) 
+    y = int(y * h)
+    x2 = int(x2 * w) 
+    y2 = int(y2 * h)
+    return gameScreen.crop((x,y,x2,y2))
+def getGamePoint(x,y):
+    """Returns the pixels closest to that point. Gets 9 pixels since in lower resolution,
+    some things such as the scroll bar on tile menus are a single pixel wide. This helps ensure
+    that the correct pixel is captured."""
+    #return gameScreen.getpixel((x,y))
+    #gameScreen.save("fullPage.png")
+    global scrollNum
+    gameScreen.crop((x-200,y-200,x+201,y+201)).save(f"scrollImages/scroll{scrollNum}.png")
+    scrollNum += 1
+    
+    #quit()
+    
+    #return gameScreen.crop((x-1,y-1,x+2,y+2))
+    return gameScreen.getpixel((x,y))
+def updateGameScreen(delay=0):
+
+    left = int(rectCoords[0] + screenshotRegion[0] * clientRect[2])
+    top = int(rectCoords[1] + screenshotRegion[1] * clientRect[3])
+    width = int(screenshotRegion[2] * clientRect[2])
+    height = int(screenshotRegion[3] * clientRect[3])
+
+    time.sleep(delay)
+    mssScreenshot = sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
+    global gameScreen
+    gameScreen = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
+    global fileNum
+    fileNum += 1
+    gameScreen.save(f"debugImages/debug{fileNum}.png")
+def waitFrame():
+    time.sleep(1/estimatedFPS)
+def inputNoScreenshot(key):
+    pydirectinput.keyDown(key)
+    waitFrame()
+    pydirectinput.keyUp(key)
+    waitFrame()

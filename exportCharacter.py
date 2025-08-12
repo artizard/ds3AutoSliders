@@ -26,8 +26,8 @@ def exportCharacter(dict):
     try:
         thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
-        mh.back() # back then enter resets the position of the in-game cursor for the first menu 
-        mh.enter()
+        mh.inputKey("q") # back then enter resets the position of the in-game cursor for the first menu 
+        mh.inputKey("e")
         exportMacro(dict)
     except RuntimeError:
         return False
@@ -42,7 +42,7 @@ def exportMacro(menu):
     """
     shouldContinue() 
     if "features" in menu: # if at face detail menu, skip 'similar face' option (not necessary for import)
-        mh.down()
+        mh.inputKey("down")
     if "menu" in menu:
         match menu["menu"]:  # handle the menus where a value is to be set - stops recursion for this path 
             case "dropdown":
@@ -56,18 +56,18 @@ def exportMacro(menu):
     # linked menus are handled differently than the rest 
     elif "tilesLinked" in menu: # linked menu with two linked aspects
         doubleLinkedMacro(menu)
-        mh.back()
+        mh.inputKey("q")
     elif "colorsLinked" in menu: # single linked menu 
         singleLinkedMacro(menu)
-        mh.back()
+        mh.inputKey("q")
 
     else: # non linked button menu 
         # recurse into next submenu 
         for nextMenu in menu:
-            mh.enter() # enter submenu in game 
+            mh.inputKey("e") # enter submenu in game 
             exportMacro(menu[nextMenu]) # handle submenu 
-            mh.down() # move down for next submenu 
-        mh.back() # exit submenu when done 
+            mh.inputKey("down") # move down for next submenu 
+        mh.inputKey("q") # exit submenu when done 
 def singleLinkedMacro(menu): 
     """ Helper method for exportMacro() - processes the linked menus that has only one linked attribute (only color - not tiles). 
     Reads all values from the page,then decides whether the menu is linked or not depending on whether 
@@ -80,9 +80,9 @@ def singleLinkedMacro(menu):
     for nextMenu in menu: # read in all values
         if nextMenu == "colorsLinked": # ignore this key as it does not represent a menu 
             continue
-        mh.enter()
+        mh.inputKey("e")
         exportMacro(menu[nextMenu]) # handle menu with normal export handling 
-        mh.down()
+        mh.inputKey("down")
     
     # decide value of "colorsLinked"
     linkedValue = None 
@@ -113,9 +113,9 @@ def doubleLinkedMacro(menu):
     for nextMenu in menu: # read in all values 
         if nextMenu in ("tilesLinked","colorsLinked"): # ignore these keys as they do not represent menus 
             continue
-        mh.enter()
+        mh.inputKey("e")
         exportMacro(menu[nextMenu]) # handle menu with normal export handling 
-        mh.down()
+        mh.inputKey("down")
     
     # decide value of "colorsLinked" and "tilesLinked"
     colorsValue = None 
@@ -153,15 +153,25 @@ def sliderMenu(menu):
     Args:
         menu (dict): Specific menu for the current slider menu. The values from the game will be set in here. 
     """
-    mh.enterDelay()
+    mh.updateGameScreen(mh.enterDelay)
+
     j = 0 
     for i in menu:
         if i != "menu":
-            text, _ = mh.processRegion(*mh.sliderRegions[j], False)
-            menu[i] = int(text)
+            currentNumber = mh.getGameRegion(*mh.sliderRegionsGameScreen[j])
+            debug_image_info(currentNumber)
+            text = mh.runModel(currentNumber, False)
+            menu[i] = text
             j += 1
-    mh.back()
-    mh.animDelay()
+    mh.inputKey("q", mh.animDelay)
+
+def debug_image_info(img):
+    print("Type:", type(img))
+    print("Mode:", img.mode)       # e.g., 'RGB', 'L', 'RGBA'
+    print("Size:", img.size)       # (width, height)
+    print("Format:", img.format)   # e.g., 'PNG', 'JPEG' (may be None if created in memory)
+    print("Info:", img.info)       # Metadata dictionary
+    print("Bounding box:", img.getbbox())  # None if completely empty/transparent
 
 def colorMenu(menu):
     """Reads the values from color menus (rgb menus such as for base skin color) and sets them in the dictionary.
@@ -169,17 +179,16 @@ def colorMenu(menu):
     Args:
         menu (dict): Specific menu for the current color menu. The values from the game will be set in here. 
     """
+    currentNumber = mh.getGameRegion(.494,.784,.521,.807)
+    menu["blue"] = mh.runModel(currentNumber, True)
 
-    text, _ = mh.processRegion(.494,.784,.521,.807, True)
-    menu["blue"] = int(text)
+    currentNumber = mh.getGameRegion(.494,.738,.521,.761)
+    menu["green"] = mh.runModel(currentNumber, True)
 
-    text, _ = mh.processRegion(.494,.738,.521,.761, True)
-    menu["green"] = int(text)
-
-    text, _ = mh.processRegion(.494,.691,.521,.715, True)
-    menu["red"] = int(text)
+    texcurrentNumber = mh.getGameRegion(.494,.691,.521,.715)
+    menu["red"] = mh.runModel(currentNumber, True)
     
-    mh.back()
+    mh.inputKey("q")
 
 def dropdownMenu(menu): 
     """Handles reading the values from 'dropdown menus'(in game they are just a few boxes such as age and gender)
@@ -195,8 +204,8 @@ def dropdownMenu(menu):
 
     if isGender:
         time.sleep(.3)
-        pydirectinput.press('left')
-        mh.enter()
+        mh.inputKey("left")
+        mh.inputKey("e")
         time.sleep(.2)
 
     numOptions = len(menu["options"])
@@ -211,7 +220,8 @@ def readOptionBox(numOptions):
     Returns:
         int: the index of the option selected (zero-indexed)
     """
-    time.sleep(.05)
+    #time.sleep(mh.enterDelay())
+    mh.waitFrame()
     # if none of the options are selected, then try again, this could 
     # possibly happen from animation where the highlight fades in and out
     while True: 
@@ -225,8 +235,9 @@ def readOptionBox(numOptions):
         else:
         # loops because it didn't detect any selected boxes 
             shouldContinue()
-            time.sleep(5) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
-    mh.back()
+            mh.updateGameScreen()
+            time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+    mh.inputKey("q")
     return current
 
 def tileMenu(menu):
@@ -237,7 +248,7 @@ def tileMenu(menu):
     """
     currentTile = mh.findSelectedTile(menu) - 1 
     menu["value"] = currentTile + 1
-    mh.back()
+    mh.inputKey("q")
 
 def checkIfInvalidState(): 
     """Runs on a separate thread and checks if either the mouse is moved or the game is tabbed out/closed. Both cases
