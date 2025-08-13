@@ -9,9 +9,9 @@ def convert(*regions):
 
         x = (coords[0] - boxCoords[0]) / boxCoords[2]
         y = (coords[1] - boxCoords[1]) / boxCoords[3]
-        x2 = (coords[2] - boxCoords[0]) / boxCoords[2]
-        y2 = (coords[3] - boxCoords[1]) / boxCoords[3]
-        print(f"({x:.4f},{y:.4f},{x2:.4f},{y2:.4f})",", ",end="",sep="")
+        #x2 = (coords[2] - boxCoords[0]) / boxCoords[2]
+        #y2 = (coords[3] - boxCoords[1]) / boxCoords[3]
+        print(f"({x:.4f},{y:.4f})",", ",end="",sep="")
        
 
 # convert((.2625,.225),(.3427,.225),(.4234,.225),
@@ -20,11 +20,4 @@ def convert(*regions):
 #               (.2625,.6389),(.3427,.6389),(.4234,.6389),
 #               (.2625,.7731),(.3427,.7731),(.4234,.7731))
 
-convert((.3445,.203,.372,.226),
-                     (.3445,.285,.372,.308),
-                     (.3445,.366,.372,.389),
-                     (.3445,.448,.372,.471),
-                     (.3445,.529,.372,.552),
-                     (.3445,.610,.372,.633),
-                     (.3445,.692,.372,.715),
-                     (.3445,.773,.372,.796))
+convert((.41640625, .2298611111))

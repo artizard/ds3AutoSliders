@@ -8,10 +8,33 @@ from manualPanes import Sliders, Colors, Labels, Dropdown, Tiles, spaceFormat
 import macroHelpers as mh
 import time
 from PIL import Image
+from inputValidation import InputValidation
 class GUI:
     def __init__(self):
 
-        # mh.loadOCR()
+        mh.loadOCR() 
+        print("STARTING")
+        
+        test = InputValidation()
+        while True:
+            time.sleep(.5)
+            mh.updateGameScreen()
+            print("Menu:",test.findMenu())
+        
+
+
+        quit()
+        # print("STARTING")
+        # time.sleep(5)
+        # mh.updateGameScreen()
+        # startTime = time.perf_counter()
+        # # for i in range(5000):
+        # #     pixel = mh.getGamePoint(.5,.5)
+        # mh.findSelectedTile
+        # endTime = time.perf_counter()
+        # print("TIME:", endTime-startTime)
+
+        # quit()
         # print("TEST")
         # time.sleep(5)
         
@@ -432,4 +455,4 @@ class GUI:
         menu = self.dictionary
         for i in self.backKeys[:-1]:
             menu = menu[i]
-        return menu
+        return menuB

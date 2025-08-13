@@ -94,7 +94,7 @@ def inputKey(key, delay=0):
     time.sleep(delay)
     updateGameScreen()
     
-    lastInputTime = time.perf_counter()
+    #lastInputTime = time.perf_counter()
     
 def scrollDown(times):
     """Simulates scrolling down in game a specified amount of times.
@@ -124,9 +124,9 @@ def isSelected(x,y,desiredColor,tolerance):
     Returns:
         bool: Represents whether or not the box at the coordinate is selected. 
     """
-    w,h = gameScreen.size
-    x = int(x * w) # convert to pixel coordinates 
-    y = int(y * h)
+    # w,h = gameScreen.size
+    # x = int(x * w) # convert to pixel coordinates 
+    # y = int(y * h)
 
     #point = getGamePoint(x,y)
     r,g,b = getGamePoint(x,y)
@@ -141,26 +141,31 @@ def isSelected(x,y,desiredColor,tolerance):
     #             return True
 
     #print("FINAL : FALSE")
-    return isColor(r,g,b,desiredColor,tolerance) 
-def isColor(r,g,b, desiredColor, tolerance):
-    """This is a helper method for isSelected that checks whether the game's color is close enough to the desired color.
+    return isColor((r,g,b),desiredColor,tolerance) 
+def isColor(color, desiredColor, tolerance, mode=0):
+    """This is a helper method for isSelected that checks whether the game's color is close enough to the desired color. It checks
+    this using different metrics - hue, saturation, and lightness.
     
     Args:
         x (float): x coordinate represented as float from 0 to 1.
         y (float): y coordinate represented as float from 0 to 1.
         desiredColor (tuple[int, int, int]): The RGB color that represents a box being selecting. 
-        tolerance (float): How close the in-game color has to be to desiredColor to be labeled as selected. 
+        tolerance (float): How close the in-game color has to be to desiredColor to be labeled as selected.
+        mode (int): Which mode to compare with. 0 = hue, 1 = lightness, 2 = saturation
     
     Returns:
         bool: Represents whether or not the box at the coordinate is selected. 
     """
     # Checking difference in hue works better than rgb because the color's brightness is variable due to the animation in-game. 
-    actualHue = colorsys.rgb_to_hls(r/255,g/255,b/255)[0] 
-    desiredHue = colorsys.rgb_to_hls(desiredColor[0]/255,desiredColor[1]/255,desiredColor[2]/255)[0]
-    if abs(desiredHue - actualHue) < tolerance:
+    print("actual color:", color)
+    actualAttribute = colorsys.rgb_to_hls(color[0]/255,color[1]/255,color[2]/255)[mode] 
+    desiredAttribute = colorsys.rgb_to_hls(desiredColor[0]/255,desiredColor[1]/255,desiredColor[2]/255)[mode]
+    print("actual:", actualAttribute, "| desired:", desiredAttribute)
+    if abs(desiredAttribute - actualAttribute) < tolerance:
         return True
     else:
         return False
+
 def loadModel(key, path):
     """Loads the models and stores them in the models dictionary to avoid an unecessary
     number of variables.
@@ -460,18 +465,16 @@ def getGameRegion(x,y,x2,y2):
     y2 = int(y2 * h)
     return gameScreen.crop((x,y,x2,y2))
 def getGamePoint(x,y):
-    """Returns the pixels closest to that point. Gets 9 pixels since in lower resolution,
-    some things such as the scroll bar on tile menus are a single pixel wide. This helps ensure
-    that the correct pixel is captured."""
-    #return gameScreen.getpixel((x,y))
-    #gameScreen.save("fullPage.png")
+    """Returns the pixels closest to that point."""
+    
+    w,h = gameScreen.size
+    x = int(x*w)
+    y = int(y*h)
+
     global scrollNum
-    gameScreen.crop((x-200,y-200,x+201,y+201)).save(f"scrollImages/scroll{scrollNum}.png")
+    gameScreen.crop((x-3,y-3,x+4,y+4)).save(f"scrollImages/scroll{scrollNum}.png")
     scrollNum += 1
-    
-    #quit()
-    
-    #return gameScreen.crop((x-1,y-1,x+2,y+2))
+
     return gameScreen.getpixel((x,y))
 def updateGameScreen(delay=0):
 
@@ -486,7 +489,7 @@ def updateGameScreen(delay=0):
     gameScreen = Image.frombytes("RGB", mssScreenshot.size, mssScreenshot.rgb)
     global fileNum
     fileNum += 1
-    gameScreen.save(f"debugImages/debug{fileNum}.png")
+    #gameScreen.save(f"debugImages/debug{fileNum}.png")
 def waitFrame():
     time.sleep(1/estimatedFPS)
 def inputNoScreenshot(key):

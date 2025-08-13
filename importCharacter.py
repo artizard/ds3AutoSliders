@@ -20,7 +20,6 @@ def importCharacter(data):
     if not openedCorrectly:
         return False
     stopRecursion.clear()
-    pydirectinput.moveTo(0,0)
 
     # the thread polls to make sure the user does not do anything that could mess up the import. 
     # If they do, it is caught by the try except statement and the import stops. 
@@ -261,13 +260,13 @@ def dropdownMenu(menu):
     # cause missed inputs as well as additional inputs that need to be pressed. 
     isGender = menu["options"][0] == "male" # shows whether or not the menu is the gender one
 
-    if menu["value"] == "": # this means the user did not select an option for the json file, so exit out 
-        if isGender:
-            time.sleep(.3) # delay so input is not ignored 
-        mh.inputKey("e") # exit menu 
-        if isGender:
-            time.sleep(.2)
-        return
+    # if menu["value"] == "": # this means the user did not select an option for the json file, so exit out 
+    #     if isGender:
+    #         time.sleep(.3) # delay so input is not ignored 
+    #     mh.inputKey("e") # exit menu 
+    #     if isGender:
+    #         time.sleep(.2)
+    #     return
     
     desiredValue = menu["options"].index(menu["value"]) + 1 # convert value (originally string) to a number 
     numOptions = len(menu["options"])
@@ -275,9 +274,7 @@ def dropdownMenu(menu):
     if isGender:
         time.sleep(.3)
         mh.inputKey('left')
-        mh.inputKey("e")
-        time.sleep(.2)
-        mh.updateGameScreen() # update to compensate for animation 
+        mh.inputKey("e", .05)
     match numOptions:
         case 2:
             twoBoxes(desiredValue)

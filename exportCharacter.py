@@ -159,19 +159,10 @@ def sliderMenu(menu):
     for i in menu:
         if i != "menu":
             currentNumber = mh.getGameRegion(*mh.sliderRegionsGameScreen[j])
-            debug_image_info(currentNumber)
             text = mh.runModel(currentNumber, False)
             menu[i] = text
             j += 1
     mh.inputKey("q", mh.animDelay)
-
-def debug_image_info(img):
-    print("Type:", type(img))
-    print("Mode:", img.mode)       # e.g., 'RGB', 'L', 'RGBA'
-    print("Size:", img.size)       # (width, height)
-    print("Format:", img.format)   # e.g., 'PNG', 'JPEG' (may be None if created in memory)
-    print("Info:", img.info)       # Metadata dictionary
-    print("Bounding box:", img.getbbox())  # None if completely empty/transparent
 
 def colorMenu(menu):
     """Reads the values from color menus (rgb menus such as for base skin color) and sets them in the dictionary.
@@ -200,13 +191,12 @@ def dropdownMenu(menu):
     # cause missed inputs, as well as there are additional inputs that need to be pressed. 
     isGender = menu["options"][0] == "male" # shows whether or not the menu is the gender one
 
-    
-
     if isGender:
         time.sleep(.3)
         mh.inputKey("left")
-        mh.inputKey("e")
-        time.sleep(.2)
+        mh.inputKey("e", .05)
+        #time.sleep(.1)
+        mh.gameScreen.save("testGenderOptions.png")
 
     numOptions = len(menu["options"])
     menu["value"] = menu["options"][readOptionBox(numOptions)]
@@ -221,7 +211,7 @@ def readOptionBox(numOptions):
         int: the index of the option selected (zero-indexed)
     """
     #time.sleep(mh.enterDelay())
-    mh.waitFrame()
+    #mh.waitFrame()
     # if none of the options are selected, then try again, this could 
     # possibly happen from animation where the highlight fades in and out
     while True: 
@@ -236,6 +226,7 @@ def readOptionBox(numOptions):
         # loops because it didn't detect any selected boxes 
             shouldContinue()
             mh.updateGameScreen()
+            print("NONE DETECTED")
             time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
     mh.inputKey("q")
     return current
