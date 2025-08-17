@@ -11,7 +11,7 @@ def convert(*regions):
         y = (coords[1] - boxCoords[1]) / boxCoords[3]
         #x2 = (coords[2] - boxCoords[0]) / boxCoords[2]
         #y2 = (coords[3] - boxCoords[1]) / boxCoords[3]
-        print(f"({x:.4f},{y:.4f})",", ",end="",sep="")
+        print(f"({x:.4f},{y:.4f})",",",end="",sep="")
        
 
 # convert((.2625,.225),(.3427,.225),(.4234,.225),
@@ -20,4 +20,4 @@ def convert(*regions):
 #               (.2625,.6389),(.3427,.6389),(.4234,.6389),
 #               (.2625,.7731),(.3427,.7731),(.4234,.7731))
 
-convert((.41640625, .2298611111))
+convert((.33359375,.9263888))

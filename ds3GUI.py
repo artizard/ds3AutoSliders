@@ -9,62 +9,40 @@ import macroHelpers as mh
 import time
 from PIL import Image
 from inputValidation import InputValidation
+
+import keyboard
+
 class GUI:
     def __init__(self):
 
-        mh.loadOCR() 
-        print("STARTING")
-        
-        test = InputValidation()
-        while True:
-            time.sleep(.5)
-            mh.updateGameScreen()
-            print("Menu:",test.findMenu())
-        
-
-
-        quit()
+        # mh.loadOCR() 
         # print("STARTING")
-        # time.sleep(5)
-        # mh.updateGameScreen()
-        # startTime = time.perf_counter()
-        # # for i in range(5000):
-        # #     pixel = mh.getGamePoint(.5,.5)
-        # mh.findSelectedTile
-        # endTime = time.perf_counter()
-        # print("TIME:", endTime-startTime)
+        
+        # test = InputValidation()
 
-        # quit()
-        # print("TEST")
-        # time.sleep(5)
+
+        # keyboardPressed = False
+        
         
         # while True:
-        #     mh.updateGameScreen()
-        #     mh.findSelectedTile({"folder":"tattoo"})
-        #     time.sleep(1)
-        # mh.loadOCR()
-        # #time.sleep(5)
-        # start = time.perf_counter()
-        # # tile = mh.findSelectedTile({
-        # #     "menu": "tiles",
-        # #     "linkType": "all",
-        # #     "numTiles": 24,
-        # #     "folder": "hair",
-        # #     "value": 22
-        # #  })
-        # # for i in range(1):
+        #     event = keyboard.read_event()
+        #     if event.event_type == keyboard.KEY_DOWN:
+        #         # mh.waitFrame()
+        #         # mh.waitFrame()
 
-        # #     mh.isSelected(*mh.tileCoords[0], (86,39,11),.05)
-        # #mh.inputKey("up")
-        # left = int(0)
-        # top = int(0)
-        # width = int(1920 * .0275)
-        # height = int(1080 * .023)
-
-        # mssScreenshot = mh.sct.grab({'left': left, 'top': top, 'width': width, 'height': height})
-        # end = time.perf_counter()
-        # print( "time:", end-start)
+        #         # mh.waitFrame()
+        #         time.sleep(.25)
+        #         mh.updateGameScreen()
+        #         startTime = time.perf_counter()
+        #         #print("Menu:",test.findMenu())
+        #         print(test.inputRegistered(event.name),"\n")
+        #         endTime = time.perf_counter()
+        #         print("Time:", endTime-startTime)
+        #         keyboardPressed = False
+        #     time.sleep(.0025)
+        
         # quit()
+        
         self.window = ctk.CTk()
         
         self.window.resizable(False,False)

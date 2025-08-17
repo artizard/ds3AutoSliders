@@ -176,7 +176,7 @@ def colorMenu(menu):
     currentNumber = mh.getGameRegion(.494,.738,.521,.761)
     menu["green"] = mh.runModel(currentNumber, True)
 
-    texcurrentNumber = mh.getGameRegion(.494,.691,.521,.715)
+    currentNumber = mh.getGameRegion(.494,.691,.521,.715)
     menu["red"] = mh.runModel(currentNumber, True)
     
     mh.inputKey("q")
@@ -199,37 +199,9 @@ def dropdownMenu(menu):
         mh.gameScreen.save("testGenderOptions.png")
 
     numOptions = len(menu["options"])
-    menu["value"] = menu["options"][readOptionBox(numOptions)]
-    
-def readOptionBox(numOptions):
-    """Reads the value of 
-    
-    Args:
-        numOption (int): Number of options in the menu. 
-
-    Returns:
-        int: the index of the option selected (zero-indexed)
-    """
-    #time.sleep(mh.enterDelay())
-    #mh.waitFrame()
-    # if none of the options are selected, then try again, this could 
-    # possibly happen from animation where the highlight fades in and out
-    while True: 
-        current = None
-        for i in range(numOptions): # check each option box and see which is selected 
-            if mh.isSelected(*mh.optionBoxRegions[i], (86,39,11), .05):
-                current = i
-                break
-        if current is not None: # end if selected option has been found 
-            break
-        else:
-        # loops because it didn't detect any selected boxes 
-            shouldContinue()
-            mh.updateGameScreen()
-            print("NONE DETECTED")
-            time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+    menu["value"] = menu["options"][mh.readOptionBox(numOptions)]    
     mh.inputKey("q")
-    return current
+
 
 def tileMenu(menu):
     """Reads the value from tile menus (menu with the images such as hair styles) and writes it to dictionary. 

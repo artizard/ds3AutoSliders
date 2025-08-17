@@ -274,7 +274,7 @@ def dropdownMenu(menu):
     if isGender:
         time.sleep(.3)
         mh.inputKey('left')
-        mh.inputKey("e", .05)
+        mh.inputKey("e", .2)
     match numOptions:
         case 2:
             twoBoxes(desiredValue)

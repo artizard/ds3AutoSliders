@@ -10,6 +10,7 @@ import colorsys
 import onnxruntime as ort
 import numpy as np
 from tkinter import messagebox
+from inputValidation import InputValidation
 """macroHelpers is a module that contains many general helper methods and attributes for 
     the other classes to use."""
 # The game can only register 1 input per frame, so the pause is ~1/60 
@@ -20,7 +21,7 @@ scrollNum = 0
 
 pydirectinput.PAUSE = 0 # handle pausing otherwise 
 #lastInputTime = 0 
-estimatedFPS = 30
+estimatedFPS = 60
 ctypes.windll.user32.SetProcessDPIAware() # fix scaling issues
 hwnd = None # represents the dark souls 3 menu 
 ocrOpened = False # represents whether or not the onnx models have been prepared yet 
@@ -34,6 +35,7 @@ animDelay = .25
 enterDelay = .3
 clientRect = None
 rectCoords = None
+inputVal = InputValidation()
 
 # This represents the in-game boundaries of each slider on slider menus, coords are in 
 # terms of the entire window
@@ -93,6 +95,13 @@ def inputKey(key, delay=0):
     
     time.sleep(delay)
     updateGameScreen()
+    if not inputVal.inputRegistered(key):
+        global estimatedFPS
+        estimatedFPS -= 2
+        waitFrame()
+        print("INPUT MISSED")
+        time.sleep(10)
+        inputKey(key)
     
     #lastInputTime = time.perf_counter()
     
@@ -157,10 +166,10 @@ def isColor(color, desiredColor, tolerance, mode=0):
         bool: Represents whether or not the box at the coordinate is selected. 
     """
     # Checking difference in hue works better than rgb because the color's brightness is variable due to the animation in-game. 
-    print("actual color:", color)
+    #print("actual color:", color)
     actualAttribute = colorsys.rgb_to_hls(color[0]/255,color[1]/255,color[2]/255)[mode] 
     desiredAttribute = colorsys.rgb_to_hls(desiredColor[0]/255,desiredColor[1]/255,desiredColor[2]/255)[mode]
-    print("actual:", actualAttribute, "| desired:", desiredAttribute)
+    #print("actual:", actualAttribute, "| desired:", desiredAttribute)
     if abs(desiredAttribute - actualAttribute) < tolerance:
         return True
     else:
@@ -466,13 +475,12 @@ def getGameRegion(x,y,x2,y2):
     return gameScreen.crop((x,y,x2,y2))
 def getGamePoint(x,y):
     """Returns the pixels closest to that point."""
-    
     w,h = gameScreen.size
     x = int(x*w)
     y = int(y*h)
 
     global scrollNum
-    gameScreen.crop((x-3,y-3,x+4,y+4)).save(f"scrollImages/scroll{scrollNum}.png")
+    gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
     scrollNum += 1
 
     return gameScreen.getpixel((x,y))
@@ -497,3 +505,33 @@ def inputNoScreenshot(key):
     waitFrame()
     pydirectinput.keyUp(key)
     waitFrame()
+def readOptionBox(numOptions):
+    """Reads the value of 
+    
+    Args:
+        numOption (int): Number of options in the menu. 
+
+    Returns:
+        int: the index of the option selected (zero-indexed)
+    """
+    #time.sleep(mh.enterDelay())
+    #mh.waitFrame()
+    # if none of the options are selected, then try again, this could 
+    # possibly happen from animation where the highlight fades in and out
+    while True: 
+        current = None
+        for i in range(numOptions): # check each option box and see which is selected 
+            if isSelected(*optionBoxRegions[i], (86,39,11), .05):
+                current = i
+                break
+        if current is not None: # end if selected option has been found 
+            break
+        else:
+        # loops because it didn't detect any selected boxes 
+            # shouldContinue()
+            # mh.updateGameScreen()
+            # print("NONE DETECTED")
+            # time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+            current = -1
+            print("ERROR ERROR ERROR")
+    return current
