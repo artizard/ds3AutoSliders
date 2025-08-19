@@ -20,18 +20,21 @@ def importCharacter(data):
     if not openedCorrectly:
         return False
     stopRecursion.clear()
+    
 
     # the thread polls to make sure the user does not do anything that could mess up the import. 
     # If they do, it is caught by the try except statement and the import stops. 
     try: 
         thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
-        mh.inputKey("q") # back then enter resets the position of the in-game cursor for the first menu 
+        mh.inputKey("q",1) # back then enter resets the position of the in-game cursor for the first menu 
         mh.inputKey("e")
         importMacro(data)
     except RuntimeError: 
+        print("FINAL FPS:", mh.estimatedFPS)
         return False
     stopRecursion.set() # ensure polling stops after import is done 
+    print("FINAL FPS:", mh.estimatedFPS)
     return True
 def importMacro(menu):
     """Carries out the macro portion of the import. Recursively goes through all parts of the dict
@@ -67,10 +70,12 @@ def importMacro(menu):
             if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this menu, skip to next 
                 mh.inputKey("down")
                 continue
-            mh.inputKey("e") # enter submenu in game 
+            delay = mh.enterDelay if menu.get(nextMenu, {}).get("menu") == "sliders" else 0
+            mh.inputKey("e", delay) # enter submenu in game 
             importMacro(menu[nextMenu]) # handle submenu 
             mh.inputKey("down") # move down for next submenu 
-        mh.inputKey("q") # exit submenu when done 
+        if "gender" not in menu: # don't go back on final recurse 
+            mh.inputKey("q") # exit submenu when done 
 def singleLinkedMacro(menu):
     """Helper method for importMacro() - processes the linked menus that only have one linked attribute. 
     
@@ -144,7 +149,6 @@ def setSliders(values):
     Args:
         values (list[int]): Each value in the list represents a slider to set to its respective value. 
     """
-    time.sleep(mh.enterDelay)
     for i in range(len(values)): # for all sliders 
         if values[i] != -1: # ignore if user didn't set a value in json
             currentValue = mh.processRegion(*mh.sliderRegions[i], False)
@@ -157,7 +161,7 @@ def setSliders(values):
                 currentValue = mh.processRegion(*mh.sliderRegions[i], False)
                 if currentValue != values[i]: 
                     print("ERROR")
-                    mh.estimatedFPS -= 2
+                    mh.lowerEstimatedFps()
                     setVal(values[i],currentValue)
                 else:
                     break
@@ -203,7 +207,7 @@ def adjust(direction, isShift):
     mh.inputNoScreenshot(direction)
     if (isShift):
         pydirectinput.keyUp('shift')
-    mh.waitFrame() # prevent from going so fast you get missed inputs 
+    # mh.waitFrame() # prevent from going so fast you get missed inputs 
 
 def colorMenu(menu):
     """Handles selecting the desired values for color menus (rgb menus such as for base skin color).
@@ -243,7 +247,7 @@ def setColorSlider(value, region):
             gameValue = mh.processRegion(*region, True) 
             if gameValue != value:
                 print("ERROR")
-                mh.estimatedFPS -= 2
+                mh.lowerEstimatedFps()
                 setVal(value,gameValue) 
             else:
                 break
@@ -299,6 +303,7 @@ def twoBoxes(option):
             shouldContinue()
             print("DROPDOWN ERROR")
             time.sleep(3) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+            mh.lowerEstimatedFps()
             twoBoxes(option)
             return
     if (current != option):

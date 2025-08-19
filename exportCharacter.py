@@ -26,7 +26,7 @@ def exportCharacter(dict):
     try:
         thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
-        mh.inputKey("q") # back then enter resets the position of the in-game cursor for the first menu 
+        mh.inputKey("q",.1) # back then enter resets the position of the in-game cursor for the first menu 
         mh.inputKey("e")
         exportMacro(dict)
     except RuntimeError:
@@ -64,7 +64,8 @@ def exportMacro(menu):
     else: # non linked button menu 
         # recurse into next submenu 
         for nextMenu in menu:
-            mh.inputKey("e") # enter submenu in game 
+            delay = mh.enterDelay if menu.get(nextMenu, {}).get("menu") == "sliders" else 0
+            mh.inputKey("e", delay) # enter submenu in game 
             exportMacro(menu[nextMenu]) # handle submenu 
             mh.inputKey("down") # move down for next submenu 
         mh.inputKey("q") # exit submenu when done 

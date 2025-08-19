@@ -433,4 +433,4 @@ class GUI:
         menu = self.dictionary
         for i in self.backKeys[:-1]:
             menu = menu[i]
-        return menuB
+        return menu

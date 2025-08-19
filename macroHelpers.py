@@ -56,6 +56,8 @@ sliderRegionsGameScreen = ((0.6258,0.0766,0.6865,0.1092),
                            (0.6258,0.6539,0.6865,0.6865),
                            (0.6258,0.7702,0.6865,0.8028),
                            (0.6258,0.8851,0.6865,0.9177))
+sliderSelectRegions = ((0.1801,0.1128),(0.1801,0.2279),(0.1801,0.3443),(0.1801,0.4594),
+                                    (0.1801,0.5748),(0.1801,0.6909),(0.1801,0.8052),(0.1801,0.9214))
 
 # This represents the in-game coordinates for each tile on the tile(image) menus, coords are in
 # terms of the gameScreen screenshot.
@@ -82,6 +84,9 @@ def inputKey(key, delay=0):
     #print("sleep left:", sleepLeft)
     #if sleepLeft > 0:
     #    time.sleep(sleepLeft)
+    if inputVal.menu == "NONE":
+        updateGameScreen()
+        inputVal.inputRegistered("0") # initialize values 
     print("key:", key)
     pydirectinput.keyDown(key)
     #time.sleep(.02)
@@ -89,19 +94,27 @@ def inputKey(key, delay=0):
     #time.sleep(.1)
     pydirectinput.keyUp(key)
     waitFrame()
-    waitFrame()
     #waitFrame()
     #time.sleep(.01)
     
     time.sleep(delay)
     updateGameScreen()
     if not inputVal.inputRegistered(key):
-        global estimatedFPS
-        estimatedFPS -= 2
+        print("frame not updated")
+        lowerEstimatedFps()
         waitFrame()
-        print("INPUT MISSED")
-        time.sleep(10)
-        inputKey(key)
+        waitFrame()
+        waitFrame()
+        waitFrame()
+        waitFrame()
+        waitFrame()
+        updateGameScreen()
+        if not inputVal.inputRegistered(key):
+            print("INPUT MISSED")
+            global estimatedFPS
+            lowerEstimatedFps()
+            print("CURRENT ESTIMATED FPS:", estimatedFPS)
+            inputKey(key, delay)
     
     #lastInputTime = time.perf_counter()
     
@@ -479,9 +492,9 @@ def getGamePoint(x,y):
     x = int(x*w)
     y = int(y*h)
 
-    global scrollNum
-    gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
-    scrollNum += 1
+    # global scrollNum
+    # gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
+    # scrollNum += 1
 
     return gameScreen.getpixel((x,y))
 def updateGameScreen(delay=0):
@@ -533,5 +546,20 @@ def readOptionBox(numOptions):
             # print("NONE DETECTED")
             # time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
             current = -1
-            print("ERROR ERROR ERROR")
+            #print("ERROR ERROR ERROR")
     return current
+def lowerEstimatedFps():
+    global estimatedFPS
+    if estimatedFPS < 10:
+        print("CANNOT DECREMENT FPS FURTHER")
+        return
+    estimatedFPS -= 3
+def findSelectedSlider():
+    selected = -1
+    j = 1
+    for i in sliderSelectRegions:
+        if isSelected(*i, (240,96,0), .1):
+            selected = j
+            break
+        j += 1
+    return selected
