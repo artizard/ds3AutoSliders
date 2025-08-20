@@ -56,8 +56,9 @@ sliderRegionsGameScreen = ((0.6258,0.0766,0.6865,0.1092),
                            (0.6258,0.6539,0.6865,0.6865),
                            (0.6258,0.7702,0.6865,0.8028),
                            (0.6258,0.8851,0.6865,0.9177))
-sliderSelectRegions = ((0.1801,0.1128),(0.1801,0.2279),(0.1801,0.3443),(0.1801,0.4594),
-                                    (0.1801,0.5748),(0.1801,0.6909),(0.1801,0.8052),(0.1801,0.9214))
+buttonSelectRegions = ((0.1748,0.0930),(0.1748,0.1590),(0.1748,0.2240),(0.1748,0.2901),
+                                    (0.1748,0.3560),(0.1748,0.4210),(0.1748,0.4871),(0.1748,0.5530),
+                                    (0.1748,0.6180),(0.1748,0.6841),(0.1748,0.7501))
 
 # This represents the in-game coordinates for each tile on the tile(image) menus, coords are in
 # terms of the gameScreen screenshot.
@@ -427,6 +428,9 @@ def invalidJsonMessage():
 def gameClosedMesage():
     """Shows dialog box message for the scenario where the user closes the game mid import/export."""
     messagebox.showwarning("ERROR", "The game was closed or tabbed out of during the process, the game needs to stay open for it to work.")
+def fatalErrorMessage():
+    """Shows dialog box message for errors such as when a method is unable to read part of the game screen."""
+    messagebox.showwarning("FATAL ERROR", "Something went wrong, try changing your resolution or brightness in game.")
 def mouseMovedMessage():
     """Shows dialog box message for the scenario where the user moves the mouse mid import/export."""
     messagebox.showwarning("ERROR", "The mouse was moved so the process was canceled because that could cause errors. Please do not move your mouse till the process is done.")
@@ -492,9 +496,9 @@ def getGamePoint(x,y):
     x = int(x*w)
     y = int(y*h)
 
-    # global scrollNum
-    # gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
-    # scrollNum += 1
+    global scrollNum
+    gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
+    scrollNum += 1
 
     return gameScreen.getpixel((x,y))
 def updateGameScreen(delay=0):
@@ -557,9 +561,21 @@ def lowerEstimatedFps():
 def findSelectedSlider():
     selected = -1
     j = 1
-    for i in sliderSelectRegions:
+    for i in buttonSelectRegions:
         if isSelected(*i, (240,96,0), .1):
             selected = j
             break
         j += 1
+    if selected == -1:
+        fatalErrorMessage()
     return selected
+def resetMainMenuPos():
+    updateGameScreen()
+    currentSelection = findSelectedSlider()
+    print("CURRENT :", currentSelection)
+    if currentSelection < 7:
+        for _ in range(currentSelection - 1):
+            inputKey("up")
+    else:
+        for _ in range(12 - currentSelection):
+            inputKey("down")

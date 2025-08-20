@@ -27,8 +27,7 @@ def importCharacter(data):
     try: 
         thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
-        mh.inputKey("q",1) # back then enter resets the position of the in-game cursor for the first menu 
-        mh.inputKey("e")
+        mh.resetMainMenuPos()
         importMacro(data)
     except RuntimeError: 
         print("FINAL FPS:", mh.estimatedFPS)

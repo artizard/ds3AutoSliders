@@ -17,7 +17,10 @@ class GUI:
 
         # mh.loadOCR() 
         # print("STARTING")
-        
+        # while True:
+        #     mh.updateGameScreen()
+        #     mh.resetMainMenuPos()
+        #     time.sleep(5.21)
         # test = InputValidation()
 
 

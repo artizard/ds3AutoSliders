@@ -9,10 +9,9 @@ class InputValidation:
         between different button menus. """
         self.numSubmenuIcons = [] 
 
+        self.sliderSelectRegions = ((0.1801,0.1128),(0.1801,0.2279),(0.1801,0.3443),(0.1801,0.4594),
+                                    (0.1801,0.5748),(0.1801,0.6909),(0.1801,0.8052),(0.1801,0.9214))
         
-        self.buttonSelectRegions = ((0.1748,0.0930),(0.1748,0.1590),(0.1748,0.2240),(0.1748,0.2901),
-                                    (0.1748,0.3560),(0.1748,0.4210),(0.1748,0.4871),(0.1748,0.5530),
-                                    (0.1748,0.6180),(0.1748,0.6841),(0.1748,0.7501))
         self.colorSelectRegions = (((0.6018,0.7923),(0.9501,.7923)),
                                    ((0.6018,0.8584),(0.9501,.8584)),
                                    ((0.6018,0.9244),(0.9501,.9244)))
@@ -79,12 +78,7 @@ class InputValidation:
                     answer = True
                 self.selected = newSelected
             case "buttons":
-                j = 1
-                for i in self.buttonSelectRegions:
-                    if mh.isSelected(*i, (240,96,0), .1):
-                        newSelected = j
-                        break
-                    j += 1
+                newSelected = mh.findSelectedSlider()
                 if self.menu == currentMenu:
                     if newSelected != self.selected:
                         answer = True
