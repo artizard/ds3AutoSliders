@@ -20,6 +20,8 @@ def importCharacter(data):
     if not openedCorrectly:
         return False
     stopRecursion.clear()
+    mh.estimatedFPS = 60
+    win32api.SetCursorPos(mh.startingMouseCoord)
     
 
     # the thread polls to make sure the user does not do anything that could mess up the import. 
@@ -69,7 +71,11 @@ def importMacro(menu):
             if not mh.menuHasValues(menu[nextMenu]): # if there are no values that need to be set from this menu, skip to next 
                 mh.inputKey("down")
                 continue
-            delay = mh.enterDelay if menu.get(nextMenu, {}).get("menu") == "sliders" else 0
+            
+            if nextMenu == "gender" or menu.get(nextMenu, {}).get("menu") == "sliders" :
+                delay = mh.enterDelay
+            else:
+                delay = 0
             mh.inputKey("e", delay) # enter submenu in game 
             importMacro(menu[nextMenu]) # handle submenu 
             mh.inputKey("down") # move down for next submenu 
@@ -275,39 +281,38 @@ def dropdownMenu(menu):
     numOptions = len(menu["options"])
 
     if isGender:
-        time.sleep(.3)
         mh.inputKey('left')
         mh.inputKey("e", .2)
-    match numOptions:
-        case 2:
-            twoBoxes(desiredValue)
-        case 3:
-            threeBoxes(desiredValue)
-def twoBoxes(option):
+    setDropdown(desiredValue, numOptions)
+def setDropdown(option, numOptions):
     """Selects a specific option for a box menu with two options. There are two versions (two and three boxes) of this instead of
         one more generic version because it allows for simpler logic in twoBoxes.
     
     Args:
         option (int): The option to select - 1 is the first box, 2 is second box
     """
-    time.sleep(mh.animDelay) # delay for animation to finish 
-    while True: 
-        if mh.isSelected(*mh.optionBoxRegions[0], (86,39,11), .05):
-            current = 1
-            break
-        elif mh.isSelected(*mh.optionBoxRegions[1], (86,39,11), .05):
-            current = 2
-            break
-        else: 
-            shouldContinue()
-            print("DROPDOWN ERROR")
-            time.sleep(3) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
-            mh.lowerEstimatedFps()
-            twoBoxes(option)
-            return
-    if (current != option):
-        mh.inputKey("down")
-    mh.inputKey("e")
+    current = mh.readOptionBox(numOptions) + 1
+    
+    if numOptions == 2:
+        if (current != option):
+            mh.inputKey("down")
+            mh.inputKey("e")
+        else:
+            mh.inputKey("q")
+
+    elif numOptions == 3:
+        if (current != option):
+            steps = option - current 
+            if steps > 0:
+                for i in range(steps):
+                    mh.inputKey("down")
+            else:
+                for i in range(abs(steps)):
+                    mh.inputKey("up")
+            mh.inputKey("e")
+        else:
+            mh.inputKey("q") # changing gender changes visuals, so avoid that if possible 
+    
 def threeBoxes(option):
     """Selects a specific option for a box menu with three options.'
     
@@ -334,15 +339,7 @@ def threeBoxes(option):
             return
 
     print("current:", current)
-    if (current != option):
-        steps = option - current 
-        if steps > 0:
-            for i in range(steps):
-                mh.inputKey("down")
-        else:
-            for i in range(abs(steps)):
-                mh.inputKey("up")
-    mh.inputKey("e")
+    
 
 def tileMenu(menu):
     """Selects the desired value for a tile menu in game (menu with the images such as hair styles)
@@ -416,9 +413,8 @@ def checkIfInvalidState():
     """Runs on a separate thread and checks if either the mouse is moved or the game is tabbed out/closed. Both cases
         would mess up the macro, so recursion will stop. Otherwise the program will continue pressing buttons which makes
         it super hard to stop. """
-    startPos = win32api.GetCursorPos()
     while not stopRecursion.is_set():
-        if win32api.GetCursorPos() != startPos:
+        if not mh.isCursorPosSafe():
             stopRecursion.set()
             mh.mouseMovedMessage()
         elif not mh.isGameFocused():

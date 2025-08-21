@@ -11,6 +11,7 @@ import onnxruntime as ort
 import numpy as np
 from tkinter import messagebox
 from inputValidation import InputValidation
+import win32api
 """macroHelpers is a module that contains many general helper methods and attributes for 
     the other classes to use."""
 # The game can only register 1 input per frame, so the pause is ~1/60 
@@ -31,11 +32,12 @@ gameScreen = None
 sct = mss.mss() 
 # region of the screenshot in terms of (x,y,w,h)
 screenshotRegion = (.061,.149,.453,.705)
-animDelay = .25
+animDelay = .325
 enterDelay = .3
 clientRect = None
 rectCoords = None
 inputVal = InputValidation()
+
 
 # This represents the in-game boundaries of each slider on slider menus, coords are in 
 # terms of the entire window
@@ -67,6 +69,10 @@ tileCoords = [(0.4448,0.1078), (0.6219,0.1078), (0.8000,0.1078),
               (0.4448,0.5006), (0.6219,0.5006), (0.8000,0.5006), 
               (0.4448,0.6949), (0.6219,0.6949), (0.8000,0.6949), 
               (0.4448,0.8852), (0.6219,0.8852), (0.8000,0.8852),]
+sliderSelectRegions = ((0.1801,0.1128),(0.1801,0.2279),(0.1801,0.3443),(0.1801,0.4594),
+                                    (0.1801,0.5748),(0.1801,0.6909),(0.1801,0.8052),(0.1801,0.9214))
+safeMouseRange = None
+startingMouseCoord = None
 
 # This represents the in-game coordinates for the option box menus (such as age). The coordinates
 # are specifically in a good place for the program to detect which is selected by color. Coords
@@ -212,16 +218,12 @@ def loadOCR():
     # This is done regardless of whether ocr has already been opened because if ocr is opened then the game is closed and reopened,
     # then the hwnd will no longer be correct. By doing it every time you avoid that scenario. 
     # Additionally make sure the window location updates if necessary. 
-    global hwnd 
-    global clientRect
-    global rectCoords 
-    hwnd = win32gui.FindWindow(None, "DARK SOULS III")
-    clientRect = win32gui.GetClientRect(hwnd)
-    rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
+    
     waitTime = 3
     global ocrOpened
     if ocrOpened:
         time.sleep(waitTime)
+        initializeDimensions() # important to do after sleep in case user moves window during sleep 
         if not checkIfGameIsOpen():
             notOpenedMessage()
             return False
@@ -238,12 +240,26 @@ def loadOCR():
     timeLeftToWait = waitTime - (endFullscreenWait-startFullscreenWait)
     if (timeLeftToWait > 0):
         time.sleep(timeLeftToWait)
-
+    initializeDimensions()
     if not checkIfGameIsOpen() or hwnd == 0:
         notOpenedMessage()
         return False
     ocrOpened = True
     return True
+def initializeDimensions():
+    global hwnd 
+    global clientRect
+    global rectCoords 
+    global safeMouseRange
+    global startingMouseCoord
+    hwnd = win32gui.FindWindow(None, "DARK SOULS III")
+    clientRect = win32gui.GetClientRect(hwnd)
+    rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
+    safeMouseRange = (int(clientRect[2] * .043 + rectCoords[0]), 
+                      int(clientRect[3] * .135 + rectCoords[1]), 
+                      int(clientRect[2] * .742 + rectCoords[0]), 
+                      int(clientRect[3] * .86 + rectCoords[1]))
+    startingMouseCoord = (int(clientRect[2] * .888 + rectCoords[0]),int(clientRect[3] * .492 + rectCoords[1]))
 def checkIfGameIsOpen():
     """Checks if not only if the game window is open and focused, but uses an onnx
     model to ensure that the game is opened to the correct menu.
@@ -397,9 +413,11 @@ def findTilePage(menu):
         sliderPos += scrollAmount
         pageNum += 1
     # failsafe
-    print("ERROR: no slider found")
-    time.sleep(.1)
-    return findTilePage(menu) # recurse and try again 
+    # print("ERROR: no slider found")
+    # time.sleep(.1)
+    # return findTilePage(menu) # recurse and try again 
+    fatalErrorMessage()
+    return -1
 def currentTileOnPage():
     """Finds which tile is currently selected on the current page (1-15), does 
     not account for the scroll bar pages - so if it is in the 3rd position, it will return 3 
@@ -496,9 +514,9 @@ def getGamePoint(x,y):
     x = int(x*w)
     y = int(y*h)
 
-    global scrollNum
-    gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
-    scrollNum += 1
+    # global scrollNum
+    # gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
+    # scrollNum += 1
 
     return gameScreen.getpixel((x,y))
 def updateGameScreen(delay=0):
@@ -535,22 +553,24 @@ def readOptionBox(numOptions):
     #mh.waitFrame()
     # if none of the options are selected, then try again, this could 
     # possibly happen from animation where the highlight fades in and out
-    while True: 
-        current = None
-        for i in range(numOptions): # check each option box and see which is selected 
-            if isSelected(*optionBoxRegions[i], (86,39,11), .05):
-                current = i
-                break
-        if current is not None: # end if selected option has been found 
+    # while True: 
+    current = None
+    for i in range(numOptions): # check each option box and see which is selected 
+        if isSelected(*optionBoxRegions[i], (86,39,11), .05):
+            current = i
             break
-        else:
-        # loops because it didn't detect any selected boxes 
-            # shouldContinue()
-            # mh.updateGameScreen()
-            # print("NONE DETECTED")
-            # time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
-            current = -1
-            #print("ERROR ERROR ERROR")
+    # if current is not None: # end if selected option has been found 
+    #     break
+    # else:
+    # loops because it didn't detect any selected boxes 
+        # shouldContinue()
+        # mh.updateGameScreen()
+        # print("NONE DETECTED")
+        # time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
+        # current = -1
+        #print("ERROR ERROR ERROR")
+    if current is None:
+        fatalErrorMessage()
     return current
 def lowerEstimatedFps():
     global estimatedFPS
@@ -561,7 +581,7 @@ def lowerEstimatedFps():
 def findSelectedSlider():
     selected = -1
     j = 1
-    for i in buttonSelectRegions:
+    for i in sliderSelectRegions:
         if isSelected(*i, (240,96,0), .1):
             selected = j
             break
@@ -569,9 +589,18 @@ def findSelectedSlider():
     if selected == -1:
         fatalErrorMessage()
     return selected
+def findSelectedButton():
+    selected = -1
+    j = 1
+    for i in buttonSelectRegions:
+        if isSelected(*i, (240,96,0), .1):
+            selected = j
+            break
+        j += 1
+    return selected
 def resetMainMenuPos():
     updateGameScreen()
-    currentSelection = findSelectedSlider()
+    currentSelection = findSelectedButton()
     print("CURRENT :", currentSelection)
     if currentSelection < 7:
         for _ in range(currentSelection - 1):
@@ -579,3 +608,11 @@ def resetMainMenuPos():
     else:
         for _ in range(12 - currentSelection):
             inputKey("down")
+def isCursorPosSafe():
+    x,y = win32api.GetCursorPos()
+    return (
+        x < safeMouseRange[0] or 
+        x > safeMouseRange[2] or 
+        y < safeMouseRange[1] or 
+        y > safeMouseRange[3]
+    )

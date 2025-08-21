@@ -9,7 +9,7 @@ import macroHelpers as mh
 import time
 from PIL import Image
 from inputValidation import InputValidation
-
+import win32api, win32con
 import keyboard
 
 class GUI:
@@ -17,10 +17,11 @@ class GUI:
 
         # mh.loadOCR() 
         # print("STARTING")
+        # time.sleep(3)
         # while True:
         #     mh.updateGameScreen()
-        #     mh.resetMainMenuPos()
-        #     time.sleep(5.21)
+        #     print(mh.findSelectedButton())
+        #     time.sleep(.1)
         # test = InputValidation()
 
 

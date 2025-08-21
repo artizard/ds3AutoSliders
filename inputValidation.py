@@ -9,8 +9,7 @@ class InputValidation:
         between different button menus. """
         self.numSubmenuIcons = [] 
 
-        self.sliderSelectRegions = ((0.1801,0.1128),(0.1801,0.2279),(0.1801,0.3443),(0.1801,0.4594),
-                                    (0.1801,0.5748),(0.1801,0.6909),(0.1801,0.8052),(0.1801,0.9214))
+        
         
         self.colorSelectRegions = (((0.6018,0.7923),(0.9501,.7923)),
                                    ((0.6018,0.8584),(0.9501,.8584)),
@@ -57,11 +56,6 @@ class InputValidation:
                 else:
                     answer = True
                 self.selected = newSelected
-            case "backMenu":
-                if self.menu != currentMenu:
-                    answer = True
-                else:
-                    answer = False # you should never have the backMenu twice 
             case "sliders":
                 if key in ("e","6") and self.menu == "sliders":
                     if self.isConfirmed():
@@ -78,7 +72,9 @@ class InputValidation:
                     answer = True
                 self.selected = newSelected
             case "buttons":
-                newSelected = mh.findSelectedSlider()
+                newSelected = mh.findSelectedButton()
+                if newSelected == -1:
+                    newSelected = self.selected
                 if self.menu == currentMenu:
                     if newSelected != self.selected:
                         answer = True
@@ -118,8 +114,6 @@ class InputValidation:
            return "tiles"
         elif mh.isColor(mh.getGamePoint(0.7846,0.1147), (107,84,43), .05): 
             return "sliders"
-        elif mh.isColor(mh.getGamePoint(0.3776,0.7165), (132,112,79), .05):
-            return "backMenu"
         elif mh.isColor(mh.getGamePoint(0.9984,0.38), (158,157,140), .15):
             return "genderConfirm"
         elif mh.isColor(mh.getGamePoint(0.4871,0.9796), (13,11,16), .05):

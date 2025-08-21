@@ -20,14 +20,15 @@ def exportCharacter(dict):
     if not openedCorrectly:
         return False
     stopRecursion.clear() 
+    mh.estimatedFPS = 60
+    win32api.SetCursorPos(mh.startingMouseCoord)
 
     # the thread polls to make sure the user does not do anything that could mess up the export. 
     # If they do, it is caught by the try except statement and the export stops. 
     try:
         thread = threading.Thread(target=checkIfInvalidState)
         thread.start()
-        mh.inputKey("q",.1) # back then enter resets the position of the in-game cursor for the first menu 
-        mh.inputKey("e")
+        mh.resetMainMenuPos()
         exportMacro(dict)
     except RuntimeError:
         return False
@@ -64,11 +65,15 @@ def exportMacro(menu):
     else: # non linked button menu 
         # recurse into next submenu 
         for nextMenu in menu:
-            delay = mh.enterDelay if menu.get(nextMenu, {}).get("menu") == "sliders" else 0
+            if nextMenu == "gender" or menu.get(nextMenu, {}).get("menu") == "sliders" :
+                delay = mh.enterDelay
+            else:
+                delay = 0
             mh.inputKey("e", delay) # enter submenu in game 
             exportMacro(menu[nextMenu]) # handle submenu 
             mh.inputKey("down") # move down for next submenu 
-        mh.inputKey("q") # exit submenu when done 
+        if "gender" not in menu: # don't go back on final recurse 
+            mh.inputKey("q") # exit submenu when done 
 def singleLinkedMacro(menu): 
     """ Helper method for exportMacro() - processes the linked menus that has only one linked attribute (only color - not tiles). 
     Reads all values from the page,then decides whether the menu is linked or not depending on whether 
@@ -154,7 +159,7 @@ def sliderMenu(menu):
     Args:
         menu (dict): Specific menu for the current slider menu. The values from the game will be set in here. 
     """
-    mh.updateGameScreen(mh.enterDelay)
+    #mh.updateGameScreen(mh.enterDelay)
 
     j = 0 
     for i in menu:
@@ -171,14 +176,12 @@ def colorMenu(menu):
     Args:
         menu (dict): Specific menu for the current color menu. The values from the game will be set in here. 
     """
-    currentNumber = mh.getGameRegion(.494,.784,.521,.807)
-    menu["blue"] = mh.runModel(currentNumber, True)
-
-    currentNumber = mh.getGameRegion(.494,.738,.521,.761)
-    menu["green"] = mh.runModel(currentNumber, True)
-
-    currentNumber = mh.getGameRegion(.494,.691,.521,.715)
-    menu["red"] = mh.runModel(currentNumber, True)
+    # similarly to isConfirmed() in inputValidation, I would rather this use the gameScreen capture instead of taking a 
+    # screenshot for each, however these regions fall outside the regions of the gameScreen screenshot. I didn't bother
+    # changing the bounds and left it here to save myself a lot of work, as the time difference is negligible. 
+    menu["blue"] = mh.processRegion(.494,.784,.521,.807, True)
+    menu["green"] = mh.processRegion(.494,.738,.521,.761, True)
+    menu["red"] = mh.processRegion(.494,.691,.521,.715, True)
     
     mh.inputKey("q")
 
@@ -193,7 +196,6 @@ def dropdownMenu(menu):
     isGender = menu["options"][0] == "male" # shows whether or not the menu is the gender one
 
     if isGender:
-        time.sleep(.3)
         mh.inputKey("left")
         mh.inputKey("e", .05)
         #time.sleep(.1)
@@ -220,7 +222,7 @@ def checkIfInvalidState():
         it super hard to stop. """
     startPos = win32api.GetCursorPos()
     while not stopRecursion.is_set():
-        if win32api.GetCursorPos() != startPos:
+        if not mh.isCursorPosSafe():
             stopRecursion.set()
             mh.mouseMovedMessage()
         elif not mh.isGameFocused():
