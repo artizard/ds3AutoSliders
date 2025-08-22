@@ -12,12 +12,17 @@ from inputValidation import InputValidation
 import win32api, win32con
 import keyboard
 
+import processExitCases
 class GUI:
     def __init__(self):
-
+    #     mh.loadOCR()
+    #     processExitCases.startPolling()
+    #     while True:
+    #         pass
+        # quit()
         # mh.loadOCR() 
         # print("STARTING")
-        # time.sleep(3)
+        # time.sleep(5)
         # while True:
         #     mh.updateGameScreen()
         #     print(mh.findSelectedButton())

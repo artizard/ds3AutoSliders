@@ -16,7 +16,7 @@ class InputValidation:
                                    ((0.6018,0.9244),(0.9501,.9244)))
     def inputRegistered(self, key):
         currentMenu = self.findMenu()
-        print("Menu:", currentMenu)
+        # print("Menu:", currentMenu)
         match currentMenu:
             case "tiles":
                 newSelected = mh.currentTileOnPage()
@@ -104,7 +104,7 @@ class InputValidation:
             case _:
                 answer = False
         self.menu = currentMenu
-        print("Selected:", self.selected)
+        # print("Selected:", self.selected)
         return answer
 
     def findMenu(self):

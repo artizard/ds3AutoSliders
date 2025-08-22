@@ -11,7 +11,7 @@ import onnxruntime as ort
 import numpy as np
 from tkinter import messagebox
 from inputValidation import InputValidation
-import win32api
+import processExitCases as endProcess
 """macroHelpers is a module that contains many general helper methods and attributes for 
     the other classes to use."""
 # The game can only register 1 input per frame, so the pause is ~1/60 
@@ -22,7 +22,8 @@ scrollNum = 0
 
 pydirectinput.PAUSE = 0 # handle pausing otherwise 
 #lastInputTime = 0 
-estimatedFPS = 60
+startingEstimatedFPS = 60
+estimatedFPS = startingEstimatedFPS # pre assignment value 
 ctypes.windll.user32.SetProcessDPIAware() # fix scaling issues
 hwnd = None # represents the dark souls 3 menu 
 ocrOpened = False # represents whether or not the onnx models have been prepared yet 
@@ -37,6 +38,8 @@ enterDelay = .3
 clientRect = None
 rectCoords = None
 inputVal = InputValidation()
+startingMouseCoord = []
+isUserInput = True
 
 
 # This represents the in-game boundaries of each slider on slider menus, coords are in 
@@ -71,8 +74,7 @@ tileCoords = [(0.4448,0.1078), (0.6219,0.1078), (0.8000,0.1078),
               (0.4448,0.8852), (0.6219,0.8852), (0.8000,0.8852),]
 sliderSelectRegions = ((0.1801,0.1128),(0.1801,0.2279),(0.1801,0.3443),(0.1801,0.4594),
                                     (0.1801,0.5748),(0.1801,0.6909),(0.1801,0.8052),(0.1801,0.9214))
-safeMouseRange = None
-startingMouseCoord = None
+
 
 # This represents the in-game coordinates for the option box menus (such as age). The coordinates
 # are specifically in a good place for the program to detect which is selected by color. Coords
@@ -85,29 +87,33 @@ optionBoxRegions = ((0.8344,0.2156), (0.8344,0.2809), (0.8344,0.3475))
 tileScrollAmounts = {"hair":.1184,"brow":.1582,"beard":0,"eyelashes":0,"tattoo":.0596, "pupil": 0} 
 def inputKey(key, delay=0):
     """Presses the key specified by the arg as well as updates the screenshot"""
+    global isUserInput
     #global lastInputTime
     #timeSinceInput = time.perf_counter() - lastInputTime
     #sleepLeft = (1/estimatedFPS) - timeSinceInput
     #print("sleep left:", sleepLeft)
     #if sleepLeft > 0:
     #    time.sleep(sleepLeft)
+    endProcess.shouldContinue()
     if inputVal.menu == "NONE":
         updateGameScreen()
         inputVal.inputRegistered("0") # initialize values 
-    print("key:", key)
+    # print("key:", key)
+    isUserInput = False
     pydirectinput.keyDown(key)
     #time.sleep(.02)
     waitFrame()
     #time.sleep(.1)
     pydirectinput.keyUp(key)
+    isUserInput = True
     waitFrame()
-    #waitFrame()
+    waitFrame()
     #time.sleep(.01)
     
     time.sleep(delay)
     updateGameScreen()
     if not inputVal.inputRegistered(key):
-        print("frame not updated")
+        print("frame not updated -", key)
         lowerEstimatedFps()
         waitFrame()
         waitFrame()
@@ -117,10 +123,9 @@ def inputKey(key, delay=0):
         waitFrame()
         updateGameScreen()
         if not inputVal.inputRegistered(key):
-            print("INPUT MISSED")
+            print("INPUT MISSED -", key)
             global estimatedFPS
             lowerEstimatedFps()
-            print("CURRENT ESTIMATED FPS:", estimatedFPS)
             inputKey(key, delay)
     
     #lastInputTime = time.perf_counter()
@@ -250,12 +255,11 @@ def initializeDimensions():
     global hwnd 
     global clientRect
     global rectCoords 
-    global safeMouseRange
     global startingMouseCoord
     hwnd = win32gui.FindWindow(None, "DARK SOULS III")
     clientRect = win32gui.GetClientRect(hwnd)
     rectCoords = win32gui.ClientToScreen(hwnd, (0, 0))
-    safeMouseRange = (int(clientRect[2] * .043 + rectCoords[0]), 
+    endProcess.safeMouseRange = (int(clientRect[2] * .043 + rectCoords[0]), 
                       int(clientRect[3] * .135 + rectCoords[1]), 
                       int(clientRect[2] * .742 + rectCoords[0]), 
                       int(clientRect[3] * .86 + rectCoords[1]))
@@ -385,7 +389,7 @@ def findSelectedTile(menu):
     """
     page = findTilePage(menu)
     tile = currentTileOnPage()
-    print(f"page:{page} tile:{tile}")
+    #print(f"page:{page} tile:{tile}")
     if page and tile: # if not null 
         return tile + (page-1)*3  
 def findTilePage(menu):
@@ -443,15 +447,11 @@ def notOpenedMessage():
 def invalidJsonMessage():
     """Shows dialog box message for the scenario where the json file chosen was invalid."""
     messagebox.showwarning("ERROR", "The file you chose is invalid. This is likely due to it not being a json file, or it having invalid json syntax.")
-def gameClosedMesage():
-    """Shows dialog box message for the scenario where the user closes the game mid import/export."""
-    messagebox.showwarning("ERROR", "The game was closed or tabbed out of during the process, the game needs to stay open for it to work.")
+
 def fatalErrorMessage():
     """Shows dialog box message for errors such as when a method is unable to read part of the game screen."""
     messagebox.showwarning("FATAL ERROR", "Something went wrong, try changing your resolution or brightness in game.")
-def mouseMovedMessage():
-    """Shows dialog box message for the scenario where the user moves the mouse mid import/export."""
-    messagebox.showwarning("ERROR", "The mouse was moved so the process was canceled because that could cause errors. Please do not move your mouse till the process is done.")
+
 def loadJSON(path):
     """Loads a json as a dictionary, then returns it.
     
@@ -510,13 +510,16 @@ def getGameRegion(x,y,x2,y2):
     return gameScreen.crop((x,y,x2,y2))
 def getGamePoint(x,y):
     """Returns the pixels closest to that point."""
+    shouldScreenshot = x in (0.4448, 0.6219, 0.8000) 
+
     w,h = gameScreen.size
     x = int(x*w)
     y = int(y*h)
 
-    # global scrollNum
-    # gameScreen.crop((x-10,y-10,x+11,y+11)).save(f"scrollImages/scroll{scrollNum}.png")
-    # scrollNum += 1
+    # if True:
+    #     global scrollNum
+    #     gameScreen.crop((x-70,y-70,x+71,y+72)).save(f"scrollImages/scroll{scrollNum}.png")
+    #     scrollNum += 1
 
     return gameScreen.getpixel((x,y))
 def updateGameScreen(delay=0):
@@ -536,9 +539,13 @@ def updateGameScreen(delay=0):
 def waitFrame():
     time.sleep(1/estimatedFPS)
 def inputNoScreenshot(key):
+    global isUserInput
+    endProcess.shouldContinue()
+    isUserInput = False
     pydirectinput.keyDown(key)
     waitFrame()
     pydirectinput.keyUp(key)
+    isUserInput = True
     waitFrame()
 def readOptionBox(numOptions):
     """Reads the value of 
@@ -570,14 +577,16 @@ def readOptionBox(numOptions):
         # current = -1
         #print("ERROR ERROR ERROR")
     if current is None:
+        print("OPTION BOX ERROR")
         fatalErrorMessage()
     return current
 def lowerEstimatedFps():
     global estimatedFPS
-    if estimatedFPS < 10:
+    if estimatedFPS < 15:
         print("CANNOT DECREMENT FPS FURTHER")
-        return
+        fatalErrorMessage()
     estimatedFPS -= 3
+    print("NEW FPS -", estimatedFPS)
 def findSelectedSlider():
     selected = -1
     j = 1
@@ -587,32 +596,26 @@ def findSelectedSlider():
             break
         j += 1
     if selected == -1:
-        fatalErrorMessage()
+        print("ERROR")
+        #fatalErrorMessage()
     return selected
 def findSelectedButton():
     selected = -1
     j = 1
     for i in buttonSelectRegions:
-        if isSelected(*i, (240,96,0), .1):
+        if isSelected(*i, (240,96,0), .05):
             selected = j
             break
         j += 1
+    #print("button:", selected)
     return selected
 def resetMainMenuPos():
     updateGameScreen()
     currentSelection = findSelectedButton()
-    print("CURRENT :", currentSelection)
+    # print("CURRENT :", currentSelection)
     if currentSelection < 7:
         for _ in range(currentSelection - 1):
             inputKey("up")
     else:
         for _ in range(12 - currentSelection):
             inputKey("down")
-def isCursorPosSafe():
-    x,y = win32api.GetCursorPos()
-    return (
-        x < safeMouseRange[0] or 
-        x > safeMouseRange[2] or 
-        y < safeMouseRange[1] or 
-        y > safeMouseRange[3]
-    )

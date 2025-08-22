@@ -3,8 +3,9 @@ import pydirectinput
 import macroHelpers as mh
 import win32api
 import threading
+import processExitCases as processExit
 
-stopRecursion = threading.Event() # if called then the export will be stopped 
+mh.stopProcess = threading.Event() # if called then the export will be stopped 
 
 def exportCharacter(dict):
     """This method starts the chain of importing a character.
@@ -19,20 +20,20 @@ def exportCharacter(dict):
     openedCorrectly = mh.loadOCR()
     if not openedCorrectly:
         return False
-    stopRecursion.clear() 
-    mh.estimatedFPS = 60
+    mh.stopProcess.clear() 
+    mh.estimatedFPS = mh.startingEstimatedFPS
     win32api.SetCursorPos(mh.startingMouseCoord)
 
-    # the thread polls to make sure the user does not do anything that could mess up the export. 
-    # If they do, it is caught by the try except statement and the export stops. 
+    processExit.startPolling()
     try:
-        thread = threading.Thread(target=checkIfInvalidState)
-        thread.start()
         mh.resetMainMenuPos()
         exportMacro(dict)
     except RuntimeError:
+        processExit.endPolling()
+        print("FINAL FPS:", mh.estimatedFPS) # DEBUG 
         return False
-    stopRecursion.set() # ensure polling stops after import is done 
+    processExit.endPolling()
+    print("FINAL FPS:", mh.estimatedFPS) # DEBUG 
     return dict
 def exportMacro(menu):
     """Carries out the macro portion of the export. Recursively goes through all parts of the dict
@@ -41,7 +42,6 @@ def exportMacro(menu):
     Args:
         menu (dict): The current submenu.  
     """
-    shouldContinue() 
     if "features" in menu: # if at face detail menu, skip 'similar face' option (not necessary for import)
         mh.inputKey("down")
     if "menu" in menu:
@@ -70,10 +70,11 @@ def exportMacro(menu):
             else:
                 delay = 0
             mh.inputKey("e", delay) # enter submenu in game 
+            print(nextMenu)
             exportMacro(menu[nextMenu]) # handle submenu 
             mh.inputKey("down") # move down for next submenu 
         if "gender" not in menu: # don't go back on final recurse 
-            mh.inputKey("q") # exit submenu when done 
+            mh.inputKey("q", (1/mh.estimatedFPS)) # exit submenu when done 
 def singleLinkedMacro(menu): 
     """ Helper method for exportMacro() - processes the linked menus that has only one linked attribute (only color - not tiles). 
     Reads all values from the page,then decides whether the menu is linked or not depending on whether 
@@ -197,9 +198,9 @@ def dropdownMenu(menu):
 
     if isGender:
         mh.inputKey("left")
-        mh.inputKey("e", .05)
+        mh.inputKey("e", .3)
         #time.sleep(.1)
-        mh.gameScreen.save("testGenderOptions.png")
+        #mh.gameScreen.save("testGenderOptions.png")
 
     numOptions = len(menu["options"])
     menu["value"] = menu["options"][mh.readOptionBox(numOptions)]    
@@ -216,25 +217,3 @@ def tileMenu(menu):
     menu["value"] = currentTile + 1
     mh.inputKey("q")
 
-def checkIfInvalidState(): 
-    """Runs on a separate thread and checks if either the mouse is moved or the game is tabbed out/closed. Both cases
-        would mess up the macro, so recursion will stop. Otherwise the program will continue pressing buttons which makes
-        it super hard to stop. """
-    startPos = win32api.GetCursorPos()
-    while not stopRecursion.is_set():
-        if not mh.isCursorPosSafe():
-            stopRecursion.set()
-            mh.mouseMovedMessage()
-        elif not mh.isGameFocused():
-            stopRecursion.set()
-            mh.gameClosedMesage()
-        time.sleep(.1)
-def shouldContinue():
-    """Raises a runtime error if stopRecursion is set. This will be set in scenarios where 
-    the user does something that will mess up the import so the import will be stopped early. 
-
-    Raises: 
-        RuntimeError: Used as a way to exit the importMacro altogether.
-    """
-    if stopRecursion.is_set(): # end early if told to
-        raise RuntimeError("Invalid game state")

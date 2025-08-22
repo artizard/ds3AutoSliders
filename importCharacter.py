@@ -3,9 +3,7 @@ import pydirectinput
 import macroHelpers as mh
 import threading
 import win32api
-
-stopRecursion = threading.Event() # if called then the import will be stopped 
-
+import processExitCases as processExit
 
 def importCharacter(data):
     """This method starts the chain of importing a character.
@@ -19,22 +17,18 @@ def importCharacter(data):
     openedCorrectly = mh.loadOCR() 
     if not openedCorrectly:
         return False
-    stopRecursion.clear()
-    mh.estimatedFPS = 60
+    mh.estimatedFPS = mh.startingEstimatedFPS
     win32api.SetCursorPos(mh.startingMouseCoord)
     
-
-    # the thread polls to make sure the user does not do anything that could mess up the import. 
-    # If they do, it is caught by the try except statement and the import stops. 
+    processExit.startPolling()
     try: 
-        thread = threading.Thread(target=checkIfInvalidState)
-        thread.start()
         mh.resetMainMenuPos()
         importMacro(data)
     except RuntimeError: 
-        print("FINAL FPS:", mh.estimatedFPS)
+        processExit.endPolling()
+        print("FINAL FPS:", mh.estimatedFPS) # DEBUG 
         return False
-    stopRecursion.set() # ensure polling stops after import is done 
+    processExit.startPolling() # ensure polling stops after import is done 
     print("FINAL FPS:", mh.estimatedFPS)
     return True
 def importMacro(menu):
@@ -44,7 +38,6 @@ def importMacro(menu):
     Args:
         menu (dict): The current submenu.  
     """
-    shouldContinue()
     if "features" in menu: # if at face detail menu, skip 'similar face' option (not necessary for import)
         mh.inputKey("down")
     if "menu" in menu: # handle the menus where a value is to be set - stops recursion for this path 
@@ -77,10 +70,11 @@ def importMacro(menu):
             else:
                 delay = 0
             mh.inputKey("e", delay) # enter submenu in game 
+            print(nextMenu)
             importMacro(menu[nextMenu]) # handle submenu 
             mh.inputKey("down") # move down for next submenu 
         if "gender" not in menu: # don't go back on final recurse 
-            mh.inputKey("q") # exit submenu when done 
+            mh.inputKey("q",(1/mh.estimatedFPS)) # exit submenu when done 
 def singleLinkedMacro(menu):
     """Helper method for importMacro() - processes the linked menus that only have one linked attribute. 
     
@@ -162,7 +156,6 @@ def setSliders(values):
             # if game value does not match the desired one (something went wrong such as missed inputs), 
             # set the slider again till it is correct  
             while True: 
-                shouldContinue() # avoid recursion if process is to be stopped 
                 currentValue = mh.processRegion(*mh.sliderRegions[i], False)
                 if currentValue != values[i]: 
                     print("ERROR")
@@ -181,7 +174,7 @@ def setVal(value, startNum):
         value (int): The value to set the slider to.
         startNum (int): The value that the slider starts at. 
     """
-    print("text :", startNum) # DEBUG
+    #print("text :", startNum) # DEBUG
  
     slideAmount = value - startNum 
     # determine direction, and ensure slideAmount is positive 
@@ -194,11 +187,9 @@ def setVal(value, startNum):
     # SlideAmount is processed using shift+left/right then without shif. This is the fastest way to move the slider. 
     # set by 10's
     for i in range(int(slideAmount/10)):
-        shouldContinue()
         adjust(direction, True)
     # set by 1's
     for i in range(slideAmount % 10):
-        shouldContinue()
         adjust(direction, False)
 def adjust(direction, isShift):
     """Adjusts the in-game slider by 1/10 in the desired direction (helper method for setVal).
@@ -243,12 +234,10 @@ def setColorSlider(value, region):
             current slider is at. This is used for figuring out the slider's starting number. The coordinates
             are expressed as floats from 0 to 1 in order to be resolution independent. 
     """
-    shouldContinue()
     mh.inputKey("up") # move in-game cursor the correct slider 
     gameValue = mh.processRegion(*region, True)  # gameValue represents the slider's value in-game 
     setVal(value,gameValue)
     while True: # second check to ensure the number in game matches value
-            shouldContinue()
             gameValue = mh.processRegion(*region, True) 
             if gameValue != value:
                 print("ERROR")
@@ -282,7 +271,7 @@ def dropdownMenu(menu):
 
     if isGender:
         mh.inputKey('left')
-        mh.inputKey("e", .2)
+        mh.inputKey("e", .3)
     setDropdown(desiredValue, numOptions)
 def setDropdown(option, numOptions):
     """Selects a specific option for a box menu with two options. There are two versions (two and three boxes) of this instead of
@@ -312,34 +301,6 @@ def setDropdown(option, numOptions):
             mh.inputKey("e")
         else:
             mh.inputKey("q") # changing gender changes visuals, so avoid that if possible 
-    
-def threeBoxes(option):
-    """Selects a specific option for a box menu with three options.'
-    
-    Args:
-        option (int): The option to select - 1 is the first box, 2 is second box, 3 is third box
-    """
-    time.sleep(.05)
-    # if none of the options are selected, then try again, this could 
-    # possibly be caused from animation where the highlight fades in and out
-    while True: 
-        if mh.isSelected(*mh.optionBoxRegions[0], (86,39,11), .05):
-            current = 1
-            break
-        elif mh.isSelected(*mh.optionBoxRegions[1], (86,39,11), .05):
-            current = 2
-            break
-        elif mh.isSelected(*mh.optionBoxRegions[2], (86,39,11), .05):
-            current = 3
-            break
-        else: 
-            shouldContinue()
-            time.sleep(3) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
-            threeBoxes(option)
-            return
-
-    print("current:", current)
-    
 
 def tileMenu(menu):
     """Selects the desired value for a tile menu in game (menu with the images such as hair styles)
@@ -362,8 +323,6 @@ def tileSet(menu):
     """
     value = menu["value"] - 1 # value to set to 
     currentTile = mh.findSelectedTile(menu) - 1 # current in-game tile selected
-    print("current:", currentTile)
-    print("desired:", value)
     #time.sleep(5)
     # fix for issue with odd number menus at the bottom 
     if menu["numTiles"] % 2 == 1:
@@ -400,33 +359,12 @@ def tileSet(menu):
         mh.inputNoScreenshot(yDirection)
     
 
-    if stopRecursion.is_set(): # avoid recursion if process is to be stopped 
+    if mh.stopProcess.is_set(): # avoid recursion if process is to be stopped 
         return
     mh.waitFrame()
     mh.updateGameScreen()
     if mh.findSelectedTile(menu) - 1 != value: # if game value does not match desired (sign of an error) then attempt to set it again 
         print("ERROR")
-        time.sleep(3)
+        time.sleep(.1)
         tileSet(menu)
 
-def checkIfInvalidState(): 
-    """Runs on a separate thread and checks if either the mouse is moved or the game is tabbed out/closed. Both cases
-        would mess up the macro, so recursion will stop. Otherwise the program will continue pressing buttons which makes
-        it super hard to stop. """
-    while not stopRecursion.is_set():
-        if not mh.isCursorPosSafe():
-            stopRecursion.set()
-            mh.mouseMovedMessage()
-        elif not mh.isGameFocused():
-            stopRecursion.set()
-            mh.gameClosedMesage()
-        time.sleep(.1)
-def shouldContinue():
-    """Raises a runtime error if stopRecursion is set. This will be set in scenarios where 
-    the user does something that will mess up the import so the import will be stopped early. 
-
-    Raises: 
-        RuntimeError: Used as a way to exit the importMacro altogether.
-    """
-    if stopRecursion.is_set(): # end early if told to
-        raise RuntimeError("Invalid game state")
