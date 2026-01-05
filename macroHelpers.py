@@ -106,27 +106,24 @@ def inputKey(key, delay=0):
     #time.sleep(.1)
     pydirectinput.keyUp(key)
     isUserInput = True
-    waitFrame()
-    waitFrame()
-    #time.sleep(.01)
+    waitFrame(5)
     
     time.sleep(delay)
     updateGameScreen()
     if not inputVal.inputRegistered(key):
         print("frame not updated -", key)
-        lowerEstimatedFps()
-        waitFrame()
-        waitFrame()
-        waitFrame()
-        waitFrame()
-        waitFrame()
-        waitFrame()
+        #lowerEstimatedFps()
+        waitFrame(5)
         updateGameScreen()
         if not inputVal.inputRegistered(key):
             print("INPUT MISSED -", key)
             global estimatedFPS
-            lowerEstimatedFps()
+            #lowerEstimatedFps()
             inputKey(key, delay)
+        else:
+            print("SUCCESS 2", key)
+    else:
+        print("SUCCESS 1", key)
     
     #lastInputTime = time.perf_counter()
     
@@ -510,13 +507,13 @@ def getGameRegion(x,y,x2,y2):
     return gameScreen.crop((x,y,x2,y2))
 def getGamePoint(x,y):
     """Returns the pixels closest to that point."""
-    shouldScreenshot = x in (0.4448, 0.6219, 0.8000) 
+    #shouldScreenshot = x in (0.6018,0.9501) 
 
     w,h = gameScreen.size
     x = int(x*w)
     y = int(y*h)
 
-    # if True:
+    # if shouldScreenshot:
     #     global scrollNum
     #     gameScreen.crop((x-70,y-70,x+71,y+72)).save(f"scrollImages/scroll{scrollNum}.png")
     #     scrollNum += 1
@@ -536,8 +533,9 @@ def updateGameScreen(delay=0):
     global fileNum
     fileNum += 1
     #gameScreen.save(f"debugImages/debug{fileNum}.png")
-def waitFrame():
-    time.sleep(1/estimatedFPS)
+def waitFrame(times=1):
+    for i in range(times):
+        time.sleep(1/estimatedFPS)
 def inputNoScreenshot(key):
     global isUserInput
     endProcess.shouldContinue()
@@ -596,7 +594,7 @@ def findSelectedSlider():
             break
         j += 1
     if selected == -1:
-        print("ERROR")
+        print("findSelectedSlider() ERROR")
         #fatalErrorMessage()
     return selected
 def findSelectedButton():

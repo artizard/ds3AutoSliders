@@ -4,6 +4,7 @@ import macroHelpers as mh
 import threading
 import win32api
 import processExitCases as processExit
+import math
 
 def importCharacter(data):
     """This method starts the chain of importing a character.
@@ -26,10 +27,10 @@ def importCharacter(data):
         importMacro(data)
     except RuntimeError: 
         processExit.endPolling()
-        print("FINAL FPS:", mh.estimatedFPS) # DEBUG 
+        print("FINAL FPS (RUNTIME ERROR):", mh.estimatedFPS) # DEBUG 
         return False
-    processExit.startPolling() # ensure polling stops after import is done 
-    print("FINAL FPS:", mh.estimatedFPS)
+    processExit.endPolling() # ensure polling stops after import is done 
+    print("FINAL FPS (FINISHED):", mh.estimatedFPS)
     return True
 def importMacro(menu):
     """Carries out the macro portion of the import. Recursively goes through all parts of the dict
@@ -156,10 +157,11 @@ def setSliders(values):
             # if game value does not match the desired one (something went wrong such as missed inputs), 
             # set the slider again till it is correct  
             while True: 
+                mh.waitFrame(5)
                 currentValue = mh.processRegion(*mh.sliderRegions[i], False)
                 if currentValue != values[i]: 
-                    print("ERROR")
-                    mh.lowerEstimatedFps()
+                    print("setSliders() ERROR")
+                    #mh.lowerEstimatedFps()
                     setVal(values[i],currentValue)
                 else:
                     break
@@ -184,13 +186,20 @@ def setVal(value, startNum):
     else:
         direction = 'right'
 
-    # SlideAmount is processed using shift+left/right then without shif. This is the fastest way to move the slider. 
-    # set by 10's
-    for i in range(int(slideAmount/10)):
-        adjust(direction, True)
-    # set by 1's
-    for i in range(slideAmount % 10):
-        adjust(direction, False)
+    # SlideAmount is processed using shift+left/right then without shift. This is the fastest way to 
+    # move the slider. 
+    
+    # If the desired number is 0 or 255, then just use 10
+    if value in (0, 255):
+        for i in range(math.ceil(slideAmount/10)):
+            adjust(direction, True)
+    else:
+        # set by 10's
+        for i in range(int(slideAmount/10)):
+            adjust(direction, True)
+        # set by 1's
+        for i in range(slideAmount % 10):
+            adjust(direction, False)
 def adjust(direction, isShift):
     """Adjusts the in-game slider by 1/10 in the desired direction (helper method for setVal).
 
@@ -234,14 +243,18 @@ def setColorSlider(value, region):
             current slider is at. This is used for figuring out the slider's starting number. The coordinates
             are expressed as floats from 0 to 1 in order to be resolution independent. 
     """
-    mh.inputKey("up") # move in-game cursor the correct slider 
+    mh.inputKey("up", .1) # move in-game cursor the correct slider, compensate for delay 
     gameValue = mh.processRegion(*region, True)  # gameValue represents the slider's value in-game 
     setVal(value,gameValue)
     while True: # second check to ensure the number in game matches value
+            mh.waitFrame(5)
             gameValue = mh.processRegion(*region, True) 
             if gameValue != value:
-                print("ERROR")
-                mh.lowerEstimatedFps()
+                print("setColorSlider() ERROR")
+                #print(f"gameValue : {gameValue}")
+                #print(f"value : {value}")
+                time.sleep(.1)
+                #mh.lowerEstimatedFps()
                 setVal(value,gameValue) 
             else:
                 break
@@ -353,18 +366,23 @@ def tileSet(menu):
         yDirection = "down"
     yOffset = abs(yOffset)
 
+    print(xOffset, xDirection)
+    print(yOffset, yDirection)
+
     for i in range(xOffset):
+        print(xDirection)
         mh.inputNoScreenshot(xDirection)
-    for i in range(yOffset): # set value in game 
+    for i in range(yOffset): # set value in game
+        print(yDirection) 
         mh.inputNoScreenshot(yDirection)
     
-
     if mh.stopProcess.is_set(): # avoid recursion if process is to be stopped 
         return
-    mh.waitFrame()
+    mh.waitFrame(5)
     mh.updateGameScreen()
     if mh.findSelectedTile(menu) - 1 != value: # if game value does not match desired (sign of an error) then attempt to set it again 
-        print("ERROR")
-        time.sleep(.1)
+        print("tileSet() ERROR")
         tileSet(menu)
+    else:
+        print("TILE SUCCESS")
 

@@ -15,7 +15,7 @@ import keyboard
 import processExitCases
 class GUI:
     def __init__(self):
-    #     mh.loadOCR()
+        # mh.loadOCR()
     #     processExitCases.startPolling()
     #     while True:
     #         pass
@@ -36,11 +36,13 @@ class GUI:
         # while True:
         #     event = keyboard.read_event()
         #     if event.event_type == keyboard.KEY_DOWN:
-        #         # mh.waitFrame()
-        #         # mh.waitFrame()
+        #         mh.waitFrame()
+        #         mh.waitFrame()
+        #         mh.waitFrame()
+        #         mh.waitFrame()
 
         #         # mh.waitFrame()
-        #         time.sleep(.25)
+        #         #time.sleep(.25)
         #         mh.updateGameScreen()
         #         startTime = time.perf_counter()
         #         #print("Menu:",test.findMenu())
@@ -443,3 +445,5 @@ class GUI:
         for i in self.backKeys[:-1]:
             menu = menu[i]
         return menu
+if __name__ == "__main__":
+    app = GUI()

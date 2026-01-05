@@ -16,95 +16,82 @@ class InputValidation:
                                    ((0.6018,0.9244),(0.9501,.9244)))
     def inputRegistered(self, key):
         currentMenu = self.findMenu()
-        # print("Menu:", currentMenu)
+        print(f"old menu - {self.menu}, new menu - {currentMenu}")
+        newSelected = None
+        # if currentMenu != self.menu:
+        #     answer = True
         match currentMenu:
             case "tiles":
+                if currentMenu == self.menu and key == "e":
+                    print("MISSED E PRESS TILE")
+                    return False
+                # we have to account for two success cases - the cases where the selection box 
+                # moves on screen, and when only the scroll bar does 
                 newSelected = mh.currentTileOnPage()
                 newTileScrollStart = self.findScrollStart()
-                if self.menu == currentMenu:
-                    #print(f"OLD: {self.selected}, {self.tileScrollStart}")
-                    #print(f"New: {newSelected}, {newTileScrollStart}")
-                    if self.selected != newSelected or self.tileScrollStart != newTileScrollStart:
-                        answer = True
-                    else:
-                        answer = False
+                if currentMenu == self.menu:
+                    answer = self.selected != newSelected or self.tileScrollStart != newTileScrollStart
                 else:
                     answer = True
-                self.selected = newSelected
                 self.tileScrollStart = newTileScrollStart
             case "dropdown":
                 newSelected = mh.readOptionBox(3) # assume 3 
                 if self.menu == currentMenu:
-                    #print(f"OLD: {self.selected}")
-                    #print(f"New: {newSelected}")
-                    if newSelected != self.selected:
-                        answer = True
-                    else: 
-                        answer = False
+                    answer = newSelected != self.selected
                 else:
                     answer = True
-                self.selected = newSelected
             case "genderConfirm":
                 newSelected = 2
                 if mh.isSelected(0.5529,0.5491, (151,76,21), .025):
                     newSelected = 1
                 if self.menu == currentMenu:
-                    if newSelected != self.selected:
-                        answer = True
-                    else:
-                        answer = False
+                    answer = newSelected != self.selected
                 else:
                     answer = True
-                self.selected = newSelected
             case "sliders":
-                if key in ("e","6") and self.menu == "sliders":
+                if key == "e" and self.menu == "sliders":
                     if self.isConfirmed():
                         return True
                     else:
                         return False
                 newSelected = mh.findSelectedSlider()
-                if self.menu == currentMenu:
-                    if newSelected != self.selected:
-                        answer = True
-                    else:
-                        answer = False
+                if currentMenu == self.menu:
+                    answer = newSelected != self.selected
                 else:
                     answer = True
-                self.selected = newSelected
             case "buttons":
                 newSelected = mh.findSelectedButton()
                 if newSelected == -1:
                     newSelected = self.selected
                 if self.menu == currentMenu:
-                    if newSelected != self.selected:
-                        answer = True
-                    else:
-                        answer = False
+                    answer = newSelected != self.selected
                 else:
                     answer = True
-                self.selected = newSelected
             case "colors":
+                if currentMenu == self.menu and key == "e":
+                    print("MISSED E PRESS COLOR")
+                    return False
                 j = 1
                 newSelected = 0
                 for i in self.colorSelectRegions:
-                    # We have to check to points, because the arrow that we are using to check which one is highlighted, will dissapear 
+                    # We have to check two points, because the arrow that we are using to check which one is highlighted, will dissapear 
                     # if the slider is all the way to the left or right. This prevents that issue 
                     if mh.isSelected(*i[0], (139,131,110), .1) or mh.isSelected(*i[1], (139,131,110), .1):
                         newSelected = j
+                        print(f"newSelected : {newSelected}")
                         break
                     j += 1
-                if self.menu == currentMenu:
-                    if newSelected != self.selected:
-                        answer = True
-                    else:
-                        answer = False
+                if currentMenu == self.menu:
+                    answer = newSelected != self.selected
                 else:
                     answer = True
-                self.selected = newSelected
             case _:
                 answer = False
         self.menu = currentMenu
         # print("Selected:", self.selected)
+        if answer:
+            print(f"old - {self.selected}, new - {newSelected}")
+            self.selected = newSelected
         return answer
 
     def findMenu(self):

@@ -4,10 +4,11 @@ import time
 import win32api
 from tkinter import messagebox
 from pynput import keyboard
-
+import pydirectinput
 
 
 def startPolling():
+    stopProcess.clear()
     global keyListener
     thread = threading.Thread(target=checkIfInvalidState)
     thread.start()
@@ -16,6 +17,8 @@ def startPolling():
 def endPolling():
     stopProcess.set()
     keyListener.stop()
+    pydirectinput.keyUp('shift')
+    print("RELEASED SHIFT")
 
 def shouldContinue():
     """Raises a runtime error if stopProcess is set. This will be set in scenarios where 
