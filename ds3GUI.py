@@ -9,6 +9,7 @@ import macroHelpers as mh
 from PIL import Image
 from inputValidation import InputValidation
 from tkinter import messagebox
+import copy
 
 import processExitCases
 class GUI:
@@ -83,7 +84,7 @@ class GUI:
         self.templateDict = mh.loadJSON("assets/template.json")
 
         """Represents not only the structure of the menus, but the values for the sliders, dropdowns, etc."""
-        self.dictionary = self.templateDict.copy()
+        self.dictionary = copy.deepcopy(self.templateDict)
 
         """keeps track of the key names of the different menus so you can traverse backwards as well as know the
             name of the parent key."""
@@ -273,7 +274,6 @@ class GUI:
         return False
     def manualCommand(self):
         """Switches to the manual character creation menu"""
-        self.dictionary.update(self.templateDict) # resets dictionary 
         self.loadButtons() # load first buttons 
         self.pages["manual"].tkraise() # display page
     def editCommand(self):
@@ -439,6 +439,7 @@ class GUI:
         confirm = messagebox.askyesno("Back to Menu Confirmation", "Are you sure you want to go back to the menu? Unsaved work will be lost.")
         if not confirm:
             return 
+        self.dictionary = copy.deepcopy(self.templateDict) # resets dictionary 
         self.pages["main"].tkraise()
         self.backKeys = []
         self.currentMenu = self.dictionary
