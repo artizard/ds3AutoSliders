@@ -1,0 +1,299 @@
+{
+   "gender": {
+      "menu": "dropdown",
+      "options": ["male","female"],
+      "value": "female"
+   },
+   "age": {
+      "menu": "dropdown",
+      "options": ["young","mature","aged"],
+      "value": "young"
+   },
+   "voice": {
+      "menu": "dropdown",
+      "options": ["youngVoice","matureVoice","agedVoice"],
+      "value": ""
+   },
+   "physique": {
+      "musculature": {
+         "menu": "dropdown",
+         "options": ["standard","muscular"],
+         "value": ""
+      },
+      "bodyHair": {
+         "menu": "dropdown",
+         "options": ["standard","thick"],
+         "value": ""
+      }
+   },
+   "buildDetail": {
+      "menu": "sliders",
+      "head": -1,
+      "chest": -1,
+      "abdomen": -1,
+      "arms": -1,
+      "legs": -1
+   },
+   "baseSkinColor": {
+      "menu": "colors",
+      "red": -1,
+      "green": -1,
+      "blue": -1
+   },
+   "skinColor": {
+      "menu": "sliders",
+      "skinTone": 255,
+      "skinColorLayer1": 180,
+      "skinColorLayer2": 140,
+      "skinColorLayer3": 80,
+      "skinColorLayer4": 120,
+      "noseBridgeColor": 127,
+      "cheekColor": 125,
+      "laughLines": 110
+   },
+   "faceDetail": {
+      "features": {
+         "menu": "sliders",
+         "apparentAge": 0,
+         "facialAesthetic": 140,
+         "formEmphasis": 0
+      },
+      "faceShape": {
+         "facialBalance": {
+            "menu": "sliders",
+            "noseSize": 120,
+            "nose/foreheadRatio": 153,
+            "faceProtrusion": 102,
+            "vert.FacialSpacing": 158,
+            "facialFeatureSlant": 165,
+            "horiz.Facial": 70
+         },
+         "forehead/glabella": {
+            "menu": "sliders",
+            "foreheadDepth": 115,
+            "foreheadProtrusion": 180,
+            "noseBridgeHeight": 125,
+            "bridgeProtrusion1": 165,
+            "bridgeProtrusion2": 38,
+            "noseBridgeWidth": 140
+         },
+         "browRidge": {
+            "menu": "sliders",
+            "browRidgeHeight": 255,
+            "innerBrowRidge": 110,
+            "outerBrowRidge": 105
+         },
+         "eyes": {
+            "menu": "sliders",
+            "eyePosition": 115,
+            "eyeSize": 200,
+            "eyeSlant": 110,
+            "eyeSpacing": 75
+         },
+         "noseRidge": {
+            "menu": "sliders",
+            "noseRidgeDepth": 115,
+            "noseRidgeLength": 102,
+            "nosePosition": 142,
+            "noseTipHeight": 65,
+            "noseProtrusion": 190,
+            "noseHeight": 150,
+            "noseSlant": 175
+         },
+         "nostrils": {
+            "menu": "sliders",
+            "nostrilSlant": 165,
+            "nostrilSize": 124,
+            "nostrilWidth": 140,
+            "nasalSize": 0
+         },
+         "cheeks": {
+            "menu": "sliders",
+            "cheekboneHeight": 80,
+            "cheekboneDepth": 150,
+            "cheekboneWidth": 120,
+            "cheekbone": 131,
+            "cheeks": 170
+         },
+         "lips": {
+            "menu": "sliders",
+            "lipShape": 235,
+            "mouthExpression": 80,
+            "lipFullness": 130,
+            "lipSize": 100,
+            "lipProtrusion": 255,
+            "lipThickness": 125
+         },
+         "mouth": {
+            "menu": "sliders",
+            "mouthProtrusion": 182,
+            "mouthSlant": 255,
+            "occlusion": 185,
+            "mouthPosition": 160,
+            "mouthWidth": 0,
+            "mouth-chinDistance": 160
+         },
+         "chin": {
+            "menu": "sliders",
+            "chinTipPosition": 127,
+            "chinLength": 100,
+            "chinProtrusion": 100,
+            "chinDepth": 170,
+            "chinSize": 150,
+            "chinHeight": 150,
+            "chinWidth": 80
+         },
+         "jaw": {
+            "menu": "sliders",
+            "jawProtrusion": 198,
+            "jawWidth": 70,
+            "lowerJaw": 108,
+            "jawContour": 80
+         }
+      },
+      "hair/facialHair": {
+         "colorsLinked": true,
+         "hair/brow/beard": {
+            "menu": "colors",
+            "linkType": "linked",
+            "red": 255,
+            "green": 125,
+            "blue": 0
+         },
+         "hair": {
+            "menu": "tiles",
+            "linkType": "all",
+            "numTiles": 24,
+            "folder": "hair",
+            "value": 19
+         },
+         "hairColor": {
+            "menu": "colors",
+            "linkType": "unlinked",
+            "red": -1,
+            "green": -1,
+            "blue": -1
+         },
+         "brow": {
+            "menu": "tiles",
+            "linkType": "all",
+            "numTiles": 17,
+            "folder": "brow",
+            "value": 13
+         },
+         "browColor": {
+            "menu": "colors",
+            "linkType": "unlinked",
+            "red": -1,
+            "green": -1,
+            "blue": -1
+         },
+         "beard": {
+            "menu": "tiles",
+            "linkType": "all",
+            "numTiles": 12,
+            "folder": "beard",
+            "value": -1
+         },
+         "beardColor": {
+            "menu": "colors",
+            "linkType": "unlinked",
+            "red": -1,
+            "green": -1,
+            "blue": -1
+         },
+         "eyelashes": {
+            "menu": "tiles",
+            "linkType": "all",
+            "numTiles": 4,
+            "folder": "eyelashes",
+            "value": 4
+         },
+         "eyelashColor": {
+            "menu": "colors",
+            "linkType": "all",
+            "red": 0,
+            "green": 0,
+            "blue": 10
+         }
+      },
+      "pupils": {
+         "tilesLinked": true,
+         "colorsLinked": true,
+         "pupils": {
+            "menu": "tiles",
+            "linkType": "linked",
+            "numTiles": 9,
+            "folder": "pupil",
+            "value": 3
+         },
+         "colorOfPupils": {
+            "menu": "colors",
+            "linkType": "linked",
+            "red": 0,
+            "green": 175,
+            "blue": 15
+         },
+         "rightPupil": {
+            "menu": "tiles",
+            "linkType": "unlinked",
+            "numTiles": 9,
+            "folder": "pupil",
+            "value": -1
+         },
+         "rightPupilColor": {
+            "menu": "colors",
+            "linkType": "unlinked",
+            "red": -1,
+            "green": -1,
+            "blue": -1
+         },
+         "leftPupil": {
+            "menu": "tiles",
+            "linkType": "unlinked",
+            "numTiles": 9,
+            "folder": "pupil",
+            "value": -1
+         },
+         "leftPupilColor": {
+            "menu": "colors",
+            "linkType": "unlinked",
+            "red": -1,
+            "green": -1,
+            "blue": -1
+         }
+      },
+      "cosmetics": {
+         "menu": "sliders",
+         "toneAroundEyes": 150,
+         "eyeSocket": 117,
+         "eyelidBrightness": 115,
+         "eyelidColor": 125,
+         "eyeliner": 0,
+         "eyeShadow": 70,
+         "lipstick1": 140,
+         "lipstick2": 117
+      },
+      "tattoo/mark": {
+         "tattoo/mark": {
+            "menu": "tiles",
+            "numTiles": 50,
+            "folder": "tattoo",
+            "value": 49
+         },
+         "tattoo/markColor": {
+            "menu": "colors",
+            "red": 49,
+            "green": 44,
+            "blue": 38
+         },
+         "tweakTattoo/mark": {
+            "menu": "sliders",
+            "position(Vertical)": 125,
+            "position(Horizontal)": 131,
+            "angle": 20,
+            "expansion": 180
+         }
+      }
+   }
+}

@@ -161,9 +161,10 @@ def setSliders(values):
                 currentValue = mh.processRegion(*mh.sliderRegions[i], False)
                 if currentValue != values[i]: 
                     print("setSliders() ERROR")
-                    #mh.lowerEstimatedFps()
+                    mh.lowerEstimatedFps()
                     setVal(values[i],currentValue)
                 else:
+                    mh.handleValidInputStreak() 
                     break
         mh.inputKey("down") # go down to next slider in game 
     # confirm changes and go back 
@@ -254,9 +255,10 @@ def setColorSlider(value, region):
                 #print(f"gameValue : {gameValue}")
                 #print(f"value : {value}")
                 time.sleep(.1)
-                #mh.lowerEstimatedFps()
+                mh.lowerEstimatedFps()
                 setVal(value,gameValue) 
             else:
+                mh.handleValidInputStreak() 
                 break
 
 def dropdownMenu(menu):
@@ -366,14 +368,12 @@ def tileSet(menu):
         yDirection = "down"
     yOffset = abs(yOffset)
 
-    print(xOffset, xDirection)
-    print(yOffset, yDirection)
+    # print(xOffset, xDirection)
+    # print(yOffset, yDirection)
 
     for i in range(xOffset):
-        print(xDirection)
         mh.inputNoScreenshot(xDirection)
     for i in range(yOffset): # set value in game
-        print(yDirection) 
         mh.inputNoScreenshot(yDirection)
     
     if mh.stopProcess.is_set(): # avoid recursion if process is to be stopped 
@@ -385,4 +385,5 @@ def tileSet(menu):
         tileSet(menu)
     else:
         print("TILE SUCCESS")
+        mh.handleValidInputStreak() 
 

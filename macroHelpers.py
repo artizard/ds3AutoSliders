@@ -41,6 +41,8 @@ inputVal = InputValidation()
 startingMouseCoord = []
 isUserInput = True
 
+validInputStreak = 0
+
 
 # This represents the in-game boundaries of each slider on slider menus, coords are in 
 # terms of the entire window
@@ -112,21 +114,32 @@ def inputKey(key, delay=0):
     updateGameScreen()
     if not inputVal.inputRegistered(key):
         print("frame not updated -", key)
-        #lowerEstimatedFps()
+        lowerEstimatedFps()
         waitFrame(5)
         updateGameScreen()
         if not inputVal.inputRegistered(key):
             print("INPUT MISSED -", key)
             global estimatedFPS
-            #lowerEstimatedFps()
+            lowerEstimatedFps()
             inputKey(key, delay)
-        else:
-            print("SUCCESS 2", key)
+        # else:
+        #     print("SUCCESS 2", key)
     else:
-        print("SUCCESS 1", key)
+        handleValidInputStreak()
     
     #lastInputTime = time.perf_counter()
     
+def handleValidInputStreak():
+    global validInputStreak 
+    global estimatedFPS
+    validInputStreak += 1
+    if validInputStreak >= 15:
+        estimatedFPS += 2
+        validInputStreak = 0
+        if estimatedFPS > 60: # prevent fps from going over 60
+            estimatedFPS = 60
+        print("INCREASING FPS, new fps:", estimatedFPS)
+
 def scrollDown(times):
     """Simulates scrolling down in game a specified amount of times.
     
@@ -449,6 +462,15 @@ def fatalErrorMessage():
     """Shows dialog box message for errors such as when a method is unable to read part of the game screen."""
     messagebox.showwarning("FATAL ERROR", "Something went wrong, try changing your resolution or brightness in game.")
 
+def fpsErrorMessage():
+    """Shows dialog box message for when the fps is lower than what is supported."""
+    messagebox.showwarning("FATAL ERROR", "Something went wrong, your in game fps may be too low to run this program. Unexpected behavior may occur with fps under 25.")
+
+def saveSuccessMessage():
+    messagebox.showinfo("SUCCESS", "Your character has successfully been saved.")
+def saveErrorMessage():
+    messagebox.showerror("ERROR SAVING", "Your character was NOT saved, please ensure you chose a proper path.")
+
 def loadJSON(path):
     """Loads a json as a dictionary, then returns it.
     
@@ -551,7 +573,8 @@ def readOptionBox(numOptions):
     Args:
         numOption (int): Number of options in the menu. 
 
-    Returns:
+    Returns:else:
+        handleValidInputStreak()
         int: the index of the option selected (zero-indexed)
     """
     #time.sleep(mh.enterDelay())
@@ -579,10 +602,15 @@ def readOptionBox(numOptions):
         fatalErrorMessage()
     return current
 def lowerEstimatedFps():
+    global validInputStreak
     global estimatedFPS
+    validInputStreak = 0
     if estimatedFPS < 15:
+        # arbitrary fps value to where you shouldn't be able to use the program, 
+        # it can get wonky at super low fps, and realistically if you are getting 
+        # less than 15 fps in the menu, the game is unplayable anyway 
         print("CANNOT DECREMENT FPS FURTHER")
-        fatalErrorMessage()
+        fpsErrorMessage() 
     estimatedFPS -= 3
     print("NEW FPS -", estimatedFPS)
 def findSelectedSlider():

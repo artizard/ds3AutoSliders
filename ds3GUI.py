@@ -6,11 +6,9 @@ import pyglet
 import exportCharacter
 from manualPanes import Sliders, Colors, Labels, Dropdown, Tiles, spaceFormat
 import macroHelpers as mh
-import time
 from PIL import Image
 from inputValidation import InputValidation
-import win32api, win32con
-import keyboard
+from tkinter import messagebox
 
 import processExitCases
 class GUI:
@@ -37,7 +35,7 @@ class GUI:
         #     event = keyboard.read_event()
         #     if event.event_type == keyboard.KEY_DOWN:
         #         mh.waitFrame()
-        #         mh.waitFrame()
+        #         mh.cx()
         #         mh.waitFrame()
         #         mh.waitFrame()
 
@@ -418,9 +416,10 @@ class GUI:
                                                 filetypes=[("JSON files", "*.json")], 
                                                 title="Save Character File")
         if not savePath:
-            print("INVALID PATH")
+            mh.saveErrorMessage() 
             return
         mh.saveFile(savePath, self.dictionary)
+        mh.saveSuccessMessage() 
     def openExportSaveLocation(self):
         self.exportFilePath = filedialog.asksaveasfilename(defaultextension=".json", 
                                                 filetypes=[("JSON files", "*.json")], 
@@ -430,13 +429,16 @@ class GUI:
         else:
             self.exportStartButton.configure(state="disabled")
     def exportCommand(self):
-        dict = exportCharacter.exportCharacter(self.templateDict)
+        dict = exportCharacter.exportCharacter(self.templateDict.copy())
         if not dict: # don't do anything if export wasn't carried out 
             return
         mh.saveFile(self.exportFilePath, dict)
         self.completeLabel.configure(text="Your export is complete!")
         self.pages["complete"].tkraise()
     def resetToMenu(self):
+        confirm = messagebox.askyesno("Back to Menu Confirmation", "Are you sure you want to go back to the menu? Unsaved work will be lost.")
+        if not confirm:
+            return 
         self.pages["main"].tkraise()
         self.backKeys = []
         self.currentMenu = self.dictionary

@@ -16,7 +16,7 @@ class InputValidation:
                                    ((0.6018,0.9244),(0.9501,.9244)))
     def inputRegistered(self, key):
         currentMenu = self.findMenu()
-        print(f"old menu - {self.menu}, new menu - {currentMenu}")
+        #print(f"old menu - {self.menu}, new menu - {currentMenu}")
         newSelected = None
         # if currentMenu != self.menu:
         #     answer = True
@@ -90,7 +90,7 @@ class InputValidation:
         self.menu = currentMenu
         # print("Selected:", self.selected)
         if answer:
-            print(f"old - {self.selected}, new - {newSelected}")
+            #print(f"old - {self.selected}, new - {newSelected}")
             self.selected = newSelected
         return answer
 
