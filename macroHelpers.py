@@ -21,7 +21,6 @@ fileNum = 0
 scrollNum = 0
 
 pydirectinput.PAUSE = 0 # handle pausing otherwise 
-#lastInputTime = 0 
 startingEstimatedFPS = 60
 estimatedFPS = startingEstimatedFPS # pre assignment value 
 ctypes.windll.user32.SetProcessDPIAware() # fix scaling issues
@@ -90,22 +89,13 @@ tileScrollAmounts = {"hair":.1184,"brow":.1582,"beard":0,"eyelashes":0,"tattoo":
 def inputKey(key, delay=0):
     """Presses the key specified by the arg as well as updates the screenshot"""
     global isUserInput
-    #global lastInputTime
-    #timeSinceInput = time.perf_counter() - lastInputTime
-    #sleepLeft = (1/estimatedFPS) - timeSinceInput
-    #print("sleep left:", sleepLeft)
-    #if sleepLeft > 0:
-    #    time.sleep(sleepLeft)
     endProcess.shouldContinue()
     if inputVal.menu == "NONE":
         updateGameScreen()
         inputVal.inputRegistered("0") # initialize values 
-    # print("key:", key)
     isUserInput = False
     pydirectinput.keyDown(key)
-    #time.sleep(.02)
     waitFrame()
-    #time.sleep(.1)
     pydirectinput.keyUp(key)
     isUserInput = True
     waitFrame(5)
@@ -122,12 +112,8 @@ def inputKey(key, delay=0):
             global estimatedFPS
             lowerEstimatedFps()
             inputKey(key, delay)
-        # else:
-        #     print("SUCCESS 2", key)
     else:
         handleValidInputStreak()
-    
-    #lastInputTime = time.perf_counter()
     
 def handleValidInputStreak():
     global validInputStreak 
@@ -577,8 +563,6 @@ def readOptionBox(numOptions):
         handleValidInputStreak()
         int: the index of the option selected (zero-indexed)
     """
-    #time.sleep(mh.enterDelay())
-    #mh.waitFrame()
     # if none of the options are selected, then try again, this could 
     # possibly happen from animation where the highlight fades in and out
     # while True: 
@@ -587,16 +571,6 @@ def readOptionBox(numOptions):
         if isSelected(*optionBoxRegions[i], (86,39,11), .05):
             current = i
             break
-    # if current is not None: # end if selected option has been found 
-    #     break
-    # else:
-    # loops because it didn't detect any selected boxes 
-        # shouldContinue()
-        # mh.updateGameScreen()
-        # print("NONE DETECTED")
-        # time.sleep(1) # DEBUG VERY SLOW RIGHT NOW ON PURPOSE 
-        # current = -1
-        #print("ERROR ERROR ERROR")
     if current is None:
         print("OPTION BOX ERROR")
         fatalErrorMessage()

@@ -16,10 +16,7 @@ class InputValidation:
                                    ((0.6018,0.9244),(0.9501,.9244)))
     def inputRegistered(self, key):
         currentMenu = self.findMenu()
-        #print(f"old menu - {self.menu}, new menu - {currentMenu}")
         newSelected = None
-        # if currentMenu != self.menu:
-        #     answer = True
         match currentMenu:
             case "tiles":
                 if currentMenu == self.menu and key == "e":
@@ -78,7 +75,6 @@ class InputValidation:
                     # if the slider is all the way to the left or right. This prevents that issue 
                     if mh.isSelected(*i[0], (139,131,110), .1) or mh.isSelected(*i[1], (139,131,110), .1):
                         newSelected = j
-                        print(f"newSelected : {newSelected}")
                         break
                     j += 1
                 if currentMenu == self.menu:
@@ -88,9 +84,7 @@ class InputValidation:
             case _:
                 answer = False
         self.menu = currentMenu
-        # print("Selected:", self.selected)
         if answer:
-            #print(f"old - {self.selected}, new - {newSelected}")
             self.selected = newSelected
         return answer
 
@@ -119,16 +113,6 @@ class InputValidation:
         # Menu with no scroll bar 
         return 0 
     def isConfirmed(self):
-        # (0.6293,0.6819)
-        # pos = .6293
-        # while pos <= .6819:
-        #     if mh.isSelected(pos,.094,(202,24,20),.025): # if red
-        #         print("FALSE")
-        #         return False
-        #     pos += .00527 #.0526 / 10
-        # print("TRUE")
-        # return True
-
         # Ideally I wouldn't have to take a screenshot here, and instead just use mh.getGamePoint(), but this is outside
         # the region of the game screenshot. I thought about increasing the bounds of the screenshot to encompass this, but
         # that would mean I would have to translate all of the coordinates, so I figured it wasn't worth the time investment. 

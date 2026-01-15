@@ -1,7 +1,6 @@
 import time
 import pydirectinput
 import macroHelpers as mh
-import threading
 import win32api
 import processExitCases as processExit
 import math
@@ -71,7 +70,7 @@ def importMacro(menu):
             else:
                 delay = 0
             mh.inputKey("e", delay) # enter submenu in game 
-            print(nextMenu)
+            #print(nextMenu)
             importMacro(menu[nextMenu]) # handle submenu 
             mh.inputKey("down") # move down for next submenu 
         if "gender" not in menu: # don't go back on final recurse 
@@ -177,7 +176,6 @@ def setVal(value, startNum):
         value (int): The value to set the slider to.
         startNum (int): The value that the slider starts at. 
     """
-    #print("text :", startNum) # DEBUG
  
     slideAmount = value - startNum 
     # determine direction, and ensure slideAmount is positive 
@@ -252,8 +250,6 @@ def setColorSlider(value, region):
             gameValue = mh.processRegion(*region, True) 
             if gameValue != value:
                 print("setColorSlider() ERROR")
-                #print(f"gameValue : {gameValue}")
-                #print(f"value : {value}")
                 time.sleep(.1)
                 mh.lowerEstimatedFps()
                 setVal(value,gameValue) 
@@ -272,14 +268,6 @@ def dropdownMenu(menu):
     # The gender menu has to be handled slightly differently because there is an additional animation that can 
     # cause missed inputs as well as additional inputs that need to be pressed. 
     isGender = menu["options"][0] == "male" # shows whether or not the menu is the gender one
-
-    # if menu["value"] == "": # this means the user did not select an option for the json file, so exit out 
-    #     if isGender:
-    #         time.sleep(.3) # delay so input is not ignored 
-    #     mh.inputKey("e") # exit menu 
-    #     if isGender:
-    #         time.sleep(.2)
-    #     return
     
     desiredValue = menu["options"].index(menu["value"]) + 1 # convert value (originally string) to a number 
     numOptions = len(menu["options"])
@@ -338,7 +326,6 @@ def tileSet(menu):
     """
     value = menu["value"] - 1 # value to set to 
     currentTile = mh.findSelectedTile(menu) - 1 # current in-game tile selected
-    #time.sleep(5)
     # fix for issue with odd number menus at the bottom 
     if menu["numTiles"] % 2 == 1:
         if int(currentTile/3) == int(menu["numTiles"]/3):
@@ -368,9 +355,6 @@ def tileSet(menu):
         yDirection = "down"
     yOffset = abs(yOffset)
 
-    # print(xOffset, xDirection)
-    # print(yOffset, yDirection)
-
     for i in range(xOffset):
         mh.inputNoScreenshot(xDirection)
     for i in range(yOffset): # set value in game
@@ -384,6 +368,5 @@ def tileSet(menu):
         print("tileSet() ERROR")
         tileSet(menu)
     else:
-        print("TILE SUCCESS")
         mh.handleValidInputStreak() 
 

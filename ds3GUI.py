@@ -14,44 +14,6 @@ import copy
 import processExitCases
 class GUI:
     def __init__(self):
-        # mh.loadOCR()
-    #     processExitCases.startPolling()
-    #     while True:
-    #         pass
-        # quit()
-        # mh.loadOCR() 
-        # print("STARTING")
-        # time.sleep(5)
-        # while True:
-        #     mh.updateGameScreen()
-        #     print(mh.findSelectedButton())
-        #     time.sleep(.1)
-        # test = InputValidation()
-
-
-        # keyboardPressed = False
-        
-        
-        # while True:
-        #     event = keyboard.read_event()
-        #     if event.event_type == keyboard.KEY_DOWN:
-        #         mh.waitFrame()
-        #         mh.cx()
-        #         mh.waitFrame()
-        #         mh.waitFrame()
-
-        #         # mh.waitFrame()
-        #         #time.sleep(.25)
-        #         mh.updateGameScreen()
-        #         startTime = time.perf_counter()
-        #         #print("Menu:",test.findMenu())
-        #         print(test.inputRegistered(event.name),"\n")
-        #         endTime = time.perf_counter()
-        #         print("Time:", endTime-startTime)
-        #         keyboardPressed = False
-        #     time.sleep(.0025)
-        
-        # quit()
         
         self.window = ctk.CTk()
         
