@@ -25,13 +25,15 @@ This is very similar to "Create File Manually", however it allows you to start w
 ## Disclaimers
 * I have designed this program to work on all computers regardless of fps or resolution, however I cannot guarantee that it will work at extremely low fps/resolution. 
 * Tattoo size/placement is resolution dependent in Dark Souls 3. This means that your tattoo placement might be different than what you are expecting, so you may need to manually adjust it. 
-* Import/Export only works when creating a character, it unfortunately will not work for rebirth at Rosaria. With that being said, you could use Rosaria to look at your sliders, then manually make a file using the "Create File Manually", however that is obviously more work.  
-* This only works on windows, not consoles. 
+* Import/Export only works when creating a character, it unfortunately will not work for rebirth at Rosaria. With that being said, you could use Rosaria to look at your sliders, then manually make a file using the "Create File Manually", however that is obviously more work.
+* This only works on windows, not consoles.
+* This only works on 16:9 resolution, if your monitor is not 16:9, make sure to switch to a 16:9 resolution such as 1920x1080 in game when using this program
 # Troubleshooting issues
 In case you run into any issues with the import/export, I've provided some troubleshooting steps. If none of these help, then feel free to message me (contact info is below), and I'll do my best to help. 
 * Go to windowed mode
 * Change in game brightness to 5
-* Change resolution 
+* Change resolution
+* Ensure you are on a 16:9 resolution (such as 1280x720, 1920x1080, 2560x1440, etc.)
 * If you are running at an unstable fps, then try closing other applications that might slow down the game. 
 # Bug Reporting/Suggestions
 If you notice any issues or have any suggestions, then feel free to contact me. I don't currently plan on adding any functionality to this program (just bug fixing), but regardless any feedback is appreciated. 
