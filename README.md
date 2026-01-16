@@ -1,5 +1,5 @@
 # Dark Souls 3 Auto Sliders
-This program allows you to import or export Dark Souls 3 character creations. The character creations are stored as JSON files, which can also be created using this program. 
+This program allows you to import or export Dark Souls 3 character creations. The character creations are stored as JSON files, which can also be created using this program. [Info for devs](MESSAGETODEVS.md)
 # Installation 
 To download the latest version, download the latest zip file from the [releases page](https://github.com/artizard/ds3AutoSliders/releases). To run it, first unzip the file, then run the "ds3AutoSliders.exe". Within the templateCharacters folder, I have provided some templates to try out. Additionally, be sure to not edit the assets or _internal folder, editing them will likely break the program. 
 # How To Use
@@ -10,7 +10,7 @@ To download the latest version, download the latest zip file from the [releases 
 4. Wait for the import to finish. Don't press any buttons or move your mouse while the import is going. If you need to stop it, it will automatically stop if you tab out, press buttons, move your mouse, etc. The speed of this will be dependent on your framerate, but at 60fps, it should take at most 2 1/2 minutes. 
 ## Export From Game To File
 1. With the "Choose Save Location" button, choose a location and name for the file you are about to create. 
-2. Get your game ready by going to the first character creation page, which should have the options gender, age, voice, physique, build detail, etc. I attached an image for clarification ![Start at this screen](githubImages/startScreen.jpg)
+2. Get your game ready by going to the first character creation page, which should have the options gender, age, voice, physique, build detail, etc. I attached an image for clarification ![Start at this screen](githubStuff/startScreen.jpg)
 3. Click the "Start:" button, then quickly go back to your game. You have 5 seconds to do this before the program will attempt to start importing. It can help to have Dark Souls 3 in windowed mode, as it'll let you tab back in quicker, but this shouldn't be necessary. Additionally, make sure you are actually focused in to the game, otherwise you may keep on getting a message that the game is not opened. 
 4. Wait for the export to finish. Don't press any buttons or move your mouse while the import is going. If you need to stop it, it will automatically stop if you tab out, press buttons, move your mouse, etc. The speed of this will be dependent on your framerate, but at 60fps, it should take at most 45 seconds. 
 ## Create File Manually
@@ -23,7 +23,10 @@ This is very similar to "Create File Manually", however it allows you to start w
 1. When you go to this screen, the file dialog box will pop up, so choose the file you wish to edit. 
 2. You can follow the instructions for "Create File Manually" from here.
 ## Disclaimers
-I have designed this program to work on all systems regardless of fps or resolution, however I cannot guarantee that it will work at extremely low fps/resolution. Additionally, it is important to note that tattoo size/placement is resolution dependent in Dark Souls 3. This means that your tattoo placement might be different than what you are expecting, so you may need to manually adjust it. This program also only works when creating a character, it unfortunately will not work for rebirth at Rosaria. 
+* I have designed this program to work on all computers regardless of fps or resolution, however I cannot guarantee that it will work at extremely low fps/resolution. 
+* Tattoo size/placement is resolution dependent in Dark Souls 3. This means that your tattoo placement might be different than what you are expecting, so you may need to manually adjust it. 
+* This program only works when creating a character, it unfortunately will not work for rebirth at Rosaria. 
+* This only works on windows, not consoles. 
 # Troubleshooting issues
 In case you run into any issues with the import/export, I've provided some troubleshooting steps. If none of these help, then feel free to message me (contact info is below), and I'll do my best to help. 
 * Go to windowed mode
@@ -32,6 +35,9 @@ In case you run into any issues with the import/export, I've provided some troub
 * If you are running at an unstable fps, then try closing other applications that might slow down the game. 
 # Bug Reporting/Suggestions
 If you notice any issues or have any suggestions, then feel free to contact me. I don't currently plan on adding any functionality to this program (just bug fixing), but regardless any feedback is appreciated. 
+# Credits
+fazedankinbank - This project was partially inspired by his [Elden Bling Auto Sliders](https://github.com/fazedankinbank/EldenBlingAutoSliders)\
+Val, Miri-Chan, RedCronoJM, Michel² - I created some template files based on their creations, their videos are linked within "credits.txt" within the templateCharacters folder. 
 # Contact info:
-<ins>email</ins> - nicholascc76@gmail.com 
-<ins>discord</ins> - ._.arti
+email : nicholascc76@gmail.com\
+discord : ._.arti
