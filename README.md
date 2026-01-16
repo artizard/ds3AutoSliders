@@ -1,5 +1,5 @@
 # Dark Souls 3 Auto Sliders
-This program allows you to import or export Dark Souls 3 character creations. The character creations are stored as JSON files, which can also be created using this program. 
+This program allows you to import or export Dark Souls 3 character creations. The character creations are stored as JSON files, which can also be created using this program. [Info for devs](MESSAGETODEVS.md)
 # Installation 
 To download the latest version, download the latest zip file from the [releases page](https://github.com/artizard/ds3AutoSliders/releases). To run it, first unzip the file, then run the "ds3AutoSliders.exe". Within the templateCharacters folder, I have provided some templates to try out. Additionally, be sure to not edit the assets or _internal folder, editing them will likely break the program. 
 # How To Use
@@ -22,9 +22,9 @@ This feature allows you to manually make a character creation file using similar
 This is very similar to "Create File Manually", however it allows you to start with a pre-existing file, so you can edit it. 
 1. When you go to this screen, the file dialog box will pop up, so choose the file you wish to edit. 
 2. You can follow the instructions for "Create File Manually" from here.
-## Disclaimers
-I have designed this program to work on all systems regardless of fps or resolution, however I cannot guarantee that it will work at very low fps/resolution. **This next part is just for people who plan on editing the code** I've decided to open source this project, but as a fair warning, this code is pretty messy, and is not well documented. I had planned on refactoring and documenting this code before releasing it, but honestly I just want to get  this project out, so I can work on other things. I debated whether or not to open source it because of this, but ultimately I figured it was for the best to go open source. If anyone reading this decides to modify/improve this project and has any questions, feel free to message me and I'll do my best to help out. (contact info below)
-# Troubleshooting issues
+# Disclaimers
+I have designed this program to work on all systems regardless of fps or resolution, however I cannot guarantee that it will work at very low fps/resolution. 
+# Troubleshooting tips
 In case you run into any issues with the import/export, I've provided some troubleshooting steps. If none of these help, then feel free to message me (contact info is below), and I'll do my best to help. 
 * Go to windowed mode
 * Change in game brightness to 5
@@ -32,6 +32,9 @@ In case you run into any issues with the import/export, I've provided some troub
 * If you are running at an unstable fps, then try closing other applications that might slow down the game. 
 # Bug Reporting/Suggestions
 If you notice any issues or have any suggestions, then feel free to contact me. I don't currently plan on adding any functionality to this program (just bug fixing), but regardless any feedback is appreciated. 
+# Credits
+fazedankinbank - This project was partially inspired by his [Elden Bling Auto Sliders](https://github.com/fazedankinbank/EldenBlingAutoSliders)\
+Val, Miri-Chan, RedCronoJM, Michel² - I created some template files based on their creations, their videos are linked within "credits.txt" within the templateCharacters folder. 
 # Contact info:
-<ins>email</ins> - nicholascc76@gmail.com 
-<ins>discord</ins> - ._.arti
+email : nicholascc76@gmail.com\
+discord : ._.arti
