@@ -1,5 +1,3 @@
-import time
-import pydirectinput
 import macroHelpers as mh
 import win32api
 import threading
@@ -199,8 +197,6 @@ def dropdownMenu(menu):
     if isGender:
         mh.inputKey("left")
         mh.inputKey("e", .3)
-        #time.sleep(.1)
-        #mh.gameScreen.save("testGenderOptions.png")
 
     numOptions = len(menu["options"])
     menu["value"] = menu["options"][mh.readOptionBox(numOptions)]    

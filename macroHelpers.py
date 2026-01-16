@@ -439,7 +439,7 @@ def currentTileOnPage():
 def notOpenedMessage():
     """Shows dialog box message for the scenario where the game was not 
     opened/was opened to wrong menu"""
-    messagebox.showwarning("ERROR", "The game was either not opened, or was opened to the wrong menu.")
+    messagebox.showwarning("ERROR", "The game was either not opened, or was opened to the wrong menu. Ensure you have the game opened and focused.")
 def invalidJsonMessage():
     """Shows dialog box message for the scenario where the json file chosen was invalid."""
     messagebox.showwarning("ERROR", "The file you chose is invalid. This is likely due to it not being a json file, or it having invalid json syntax.")

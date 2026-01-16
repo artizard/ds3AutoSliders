@@ -1,17 +1,14 @@
 import customtkinter as ctk
 from tkinter import filedialog
 import importCharacter
-from tkinter import font
 import pyglet
 import exportCharacter
 from manualPanes import Sliders, Colors, Labels, Dropdown, Tiles, spaceFormat
 import macroHelpers as mh
 from PIL import Image
-from inputValidation import InputValidation
 from tkinter import messagebox
 import copy
 
-import processExitCases
 class GUI:
     def __init__(self):
         

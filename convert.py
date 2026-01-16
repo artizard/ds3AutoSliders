@@ -1,4 +1,5 @@
-
+"""This isn't actually used in the program, I just made this at one point to convert some coordinates I calculated
+after I had changed some systems. """
 def convert(*regions):
 
     x=y=x2=y2=None
